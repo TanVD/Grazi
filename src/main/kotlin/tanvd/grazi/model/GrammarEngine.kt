@@ -2,7 +2,6 @@ package tanvd.grazi.model
 
 import org.languagetool.JLanguageTool
 import org.languagetool.language.BritishEnglish
-import org.languagetool.language.LanguageIdentifier
 import java.util.stream.Collectors
 
 object GrammarEngine {
