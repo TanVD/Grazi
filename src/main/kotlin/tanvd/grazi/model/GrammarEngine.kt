@@ -6,7 +6,6 @@ import org.languagetool.language.AmericanEnglish
 import org.languagetool.language.LanguageIdentifier
 import org.languagetool.rules.RuleMatch
 import java.util.*
-import kotlin.collections.ArrayList
 
 object GrammarEngine {
     private val langToolsByLang: MutableMap<Language, JLanguageTool> = HashMap()
@@ -14,7 +13,7 @@ object GrammarEngine {
 
     val disabledRules = arrayListOf(RuleMatch.Type.UnknownWord)
     val disabledCategories = arrayListOf(Typo.Category.TYPOGRAPHY)
-    val disabledLangs = ArrayList<String>()
+    var enabledLangs = arrayListOf("en")
 
     private const val charsForLangDetection = 500
 
@@ -23,7 +22,9 @@ object GrammarEngine {
             return emptyList()
         }
 
-        val lang = LanguageIdentifier(charsForLangDetection).detectLanguage(str, disabledLangs)?.detectedLanguage ?: americanEnglish
+        val lang = LanguageIdentifier(charsForLangDetection).detectLanguage(str) ?: americanEnglish
+        if (!enabledLangs.contains(lang.shortCode))
+            return emptyList()
 
         if (lang !in langToolsByLang) {
             langToolsByLang[lang] = JLanguageTool(lang)
