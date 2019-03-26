@@ -22,7 +22,7 @@ object GrammarEngine {
 
     val disabledRules = arrayListOf(RuleMatch.Type.UnknownWord)
     val disabledCategories = arrayListOf(Typo.Category.TYPOGRAPHY)
-    val disabledLangs = ArrayList<String>()
+    var enabledLangs = arrayListOf("en")
 
     private fun wrongSize(str: String) = isSmall(str) || isBig(str)
     private fun isSmall(str: String) = str.length < 2
