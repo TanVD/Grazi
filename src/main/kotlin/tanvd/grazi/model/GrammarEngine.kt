@@ -9,10 +9,12 @@ import java.util.stream.Collectors
 object GrammarEngine {
     private var langToolsByLang: MutableMap<Language, JLanguageTool> = HashMap()
     var removeUnknownWords = true
+    var charsForLangDetection = 500
 
     fun getFixes(str: String): List<TextFix> {
-        val lang = LanguageIdentifier(500).detectLanguage(str)
-        if (lang != null && !langToolsByLang.containsKey(lang)) {
+        val lang = LanguageIdentifier(charsForLangDetection).detectLanguage(str)
+                ?: throw RuntimeException("Language not found")
+        if (!langToolsByLang.containsKey(lang)) {
             langToolsByLang[lang] = JLanguageTool(lang)
         }
         return langToolsByLang[lang]!!
@@ -20,7 +22,14 @@ object GrammarEngine {
                 .stream()
                 .filter { it != null }
                 .filter { !removeUnknownWords || removeUnknownWords && it.type != RuleMatch.Type.UnknownWord }
-                .map { TextFix(IntRange(it.fromPos, it.toPos), it.shortMessage, it.suggestedReplacements) }
+                .map {
+                    TextFix(
+                            IntRange(it.fromPos, it.toPos),
+                            it.shortMessage,
+                            TyposCategories[it.rule.category.id.toString()],
+                            it.suggestedReplacements
+                    )
+                }
                 .collect(Collectors.toList<TextFix>())
     }
 }
