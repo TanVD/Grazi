@@ -11,11 +11,10 @@
     </extensions>
 
     <extensionPoints>
-        <extensionPoint qualifiedName="tanvd.grazi.languageSupport"
-                        interface="tanvd.grazi.ide.GraziLanguageSupport"/>
+        <extensionPoint qualifiedName="tanvd.grazi.languageSupport" interface="tanvd.grazi.ide.GraziLanguageSupport"/>
     </extensionPoints>
 
     <extensions defaultExtensionNs="tanvd.grazi">
-        <languageSupport implementation="tanvd.grazi.ide.PlainTextSupport"/>
+        <languageSupport implementation="tanvd.grazi.ide.GraziPlainTextSupport"/>
     </extensions>
 </idea-plugin>
