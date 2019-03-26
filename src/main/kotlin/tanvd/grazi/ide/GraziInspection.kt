@@ -16,23 +16,26 @@ class GraziInspection : LocalInspectionTool() {
         for (ext in Extensions.getExtensions(EP_NAME)) {
             val blocks = ext.extract(file)
             if (blocks != null) {
-                return checkBlocks(blocks, manager, isOnTheFly)
+                return checkBlocks(blocks, manager, isOnTheFly, ext)
             }
         }
-        return null
+        return emptyArray()
     }
 
     private fun checkBlocks(
             blocks: List<TextBlock>,
             manager: InspectionManager,
-            isOnTheFly: Boolean
-    ): Array<ProblemDescriptor>? {
+            isOnTheFly: Boolean,
+            ext: GraziLanguageSupport
+    ): Array<ProblemDescriptor> {
         val result = mutableListOf<ProblemDescriptor>()
         for (block in blocks) {
             val fixes = GrammarEngine.getFixes(block.text)
             fixes.forEach {
-                manager.createProblemDescriptor(block.element, TextRange.create(it.range.start, it.range.endInclusive),
-                        it.description, ProblemHighlightType.ERROR, isOnTheFly)
+                val range = TextRange.create(it.range.start, it.range.endInclusive)
+                val quickFixes = it.fix?.map { GraziQuickFix(ext, block, range, it) }?.toTypedArray() ?: emptyArray()
+                result += manager.createProblemDescriptor(block.element, range,
+                        it.description, ProblemHighlightType.ERROR, isOnTheFly, *quickFixes)
             }
         }
         return result.toTypedArray()

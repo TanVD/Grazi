@@ -2,6 +2,8 @@
     <id>tanvd.grazi</id>
     <name>Grazi</name>
 
+    <depends optional="true" config-file="markdown.xml">org.intellij.plugins.markdown</depends>
+
     <extensions defaultExtensionNs="com.intellij">
         <localInspection displayName="Mistake in an English text" groupName="English"
                          enabledByDefault="true"
@@ -9,11 +11,10 @@
     </extensions>
 
     <extensionPoints>
-        <extensionPoint qualifiedName="tanvd.grazi.languageSupport"
-                        interface="tanvd.grazi.ide.GraziLanguageSupport"/>
+        <extensionPoint qualifiedName="tanvd.grazi.languageSupport" interface="tanvd.grazi.ide.GraziLanguageSupport"/>
     </extensionPoints>
 
     <extensions defaultExtensionNs="tanvd.grazi">
-        <languageSupport implementation="tanvd.grazi.ide.PlainTextSupport"/>
+        <languageSupport implementation="tanvd.grazi.ide.GraziPlainTextSupport"/>
     </extensions>
 </idea-plugin>
