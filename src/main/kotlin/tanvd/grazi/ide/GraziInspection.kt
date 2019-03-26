@@ -5,11 +5,13 @@ import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.extensions.Extensions
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.*
+import tanvd.grazi.ide.language.LanguageSupport
 import tanvd.grazi.model.GrammarEngine
+import tanvd.grazi.model.TextBlock
 
 class GraziInspection : AbstractBaseJavaLocalInspectionTool() {
     companion object {
-        val EP_NAME = ExtensionPointName.create<GraziLanguageSupport>("tanvd.grazi.languageSupport")
+        val EP_NAME = ExtensionPointName.create<LanguageSupport>("tanvd.grazi.languageSupport")
     }
 
     override fun checkFile(file: PsiFile, manager: InspectionManager, isOnTheFly: Boolean): Array<ProblemDescriptor>? {
@@ -23,13 +25,14 @@ class GraziInspection : AbstractBaseJavaLocalInspectionTool() {
     }
 
     private fun checkBlocks(blocks: List<TextBlock>, manager: InspectionManager, isOnTheFly: Boolean,
-                            ext: GraziLanguageSupport): Array<ProblemDescriptor> {
+                            ext: LanguageSupport): Array<ProblemDescriptor> {
         val result = mutableListOf<ProblemDescriptor>()
         for (block in blocks) {
             val fixes = GrammarEngine.getFixes(block.text)
             fixes.forEach { fix ->
                 val range = TextRange.create(fix.range.start, fix.range.endInclusive)
                 val quickFixes = fix.fix?.map { GraziQuickFix(fix.category.description, ext, block, range, it) }?.toTypedArray() ?: emptyArray()
+                @Suppress("SpreadOperator")
                 val problemDescriptor = manager.createProblemDescriptor(block.element, range,
                         fix.fullDescription, fix.category.highlight, isOnTheFly, *quickFixes)
 

@@ -6,40 +6,32 @@ import org.languagetool.language.AmericanEnglish
 import org.languagetool.language.LanguageIdentifier
 import org.languagetool.rules.RuleMatch
 import java.util.*
-import java.util.stream.Collectors
+import kotlin.collections.ArrayList
 
 object GrammarEngine {
-    private var langToolsByLang: MutableMap<Language, JLanguageTool> = HashMap()
-    var removeUnknownWords = true
-    var charsForLangDetection = 500
-    var noopLangs = emptyList<String>()
+    private val langToolsByLang: MutableMap<Language, JLanguageTool> = HashMap()
+    private val americanEnglish by lazy { AmericanEnglish() }
 
-    fun getFixes(str: String): List<TextFix> {
+    val disabledRules = arrayListOf(RuleMatch.Type.UnknownWord)
+    val disabledCategories = arrayListOf(Typo.Category.TYPOGRAPHY)
+    val disabledLangs = ArrayList<String>()
+
+    private const val charsForLangDetection = 500
+
+    fun getFixes(str: String): List<Typo> {
         if (str.length < 2) {
-            return Collections.emptyList()
+            return emptyList()
         }
-        var lang: Language
-        try {
-            lang = LanguageIdentifier(charsForLangDetection).detectLanguage(str, noopLangs)?.detectedLanguage ?: AmericanEnglish()
-        } catch (e: ClassNotFoundException) {
-            lang = AmericanEnglish()
-        }
-        if (!langToolsByLang.containsKey(lang)) {
+
+        val lang = LanguageIdentifier(charsForLangDetection).detectLanguage(str, disabledLangs)?.detectedLanguage ?: americanEnglish
+
+        if (lang !in langToolsByLang) {
             langToolsByLang[lang] = JLanguageTool(lang)
         }
-        return langToolsByLang[lang]!!
+        return langToolsByLang.getOrPut(lang) { JLanguageTool(lang) }
                 .check(str)
-                .stream()
-                .filter { it != null }
-                .filter { !removeUnknownWords || removeUnknownWords && it.type != RuleMatch.Type.UnknownWord }
-                .map {
-                    TextFix(
-                            IntRange(it.fromPos, it.toPos),
-                            it.shortMessage,
-                            TyposCategories[it.rule.category.id.toString()],
-                            it.suggestedReplacements
-                    )
-                }
-                .collect(Collectors.toList<TextFix>())
+                .filterNotNull()
+                .filter { it.type !in disabledRules && it.typoCategory !in disabledCategories }
+                .map { Typo(it.toIntRange(), it.shortMessage, it.typoCategory, it.suggestedReplacements) }
     }
 }

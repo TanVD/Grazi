@@ -1,6 +1,7 @@
 <idea-plugin>
     <id>tanvd.grazi</id>
     <name>Grazi</name>
+    <vendor>TanVD</vendor>
 
     <depends optional="true" config-file="markdown.xml">org.intellij.plugins.markdown</depends>
 
@@ -14,18 +15,23 @@
     </extensions>
 
     <extensionPoints>
-        <extensionPoint qualifiedName="tanvd.grazi.languageSupport" interface="tanvd.grazi.ide.GraziLanguageSupport"/>
+        <extensionPoint qualifiedName="tanvd.grazi.languageSupport" interface="tanvd.grazi.ide.language.LanguageSupport"/>
     </extensionPoints>
 
     <extensions defaultExtensionNs="tanvd.grazi">
-        <languageSupport implementation="tanvd.grazi.ide.GraziPlainTextSupport"/>
+        <languageSupport implementation="tanvd.grazi.ide.language.PlainTextSupport"/>
     </extensions>
 
     <extensions defaultExtensionNs="tanvd.grazi">
-        <languageSupport implementation="tanvd.grazi.ide.JavaDocSupport"/>
+        <languageSupport implementation="tanvd.grazi.ide.language.JavaDocSupport"/>
     </extensions>
 
     <extensions defaultExtensionNs="tanvd.grazi">
-        <languageSupport implementation="tanvd.grazi.ide.HtmlSupport"/>
+        <languageSupport implementation="tanvd.grazi.ide.language.HtmlSupport"/>
     </extensions>
+    <application-components>
+        <component>
+            <implementation-class>tanvd.grazi.model.GrammarEngine</implementation-class>
+        </component>
+    </application-components>
 </idea-plugin>

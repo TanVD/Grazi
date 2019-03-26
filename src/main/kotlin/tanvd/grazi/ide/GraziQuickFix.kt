@@ -6,14 +6,20 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.util.text.StringUtil
+import tanvd.grazi.ide.language.LanguageSupport
+import tanvd.grazi.model.TextBlock
 import java.util.regex.Pattern
 
 
-class GraziQuickFix(private val ruleName: String, private val ext: GraziLanguageSupport,
+class GraziQuickFix(private val ruleName: String, private val ext: LanguageSupport,
                     private val block: TextBlock, private val textRange: TextRange,
                     private val replacement: String) : LocalQuickFix {
+    companion object {
+        const val maxReplacementLength = 20
+    }
+
     override fun getName(): String {
-        return "Fix '$ruleName', use: '" + StringUtil.shortenTextWithEllipsis(replacement, 20, 0, true) + "'"
+        return "Fix '$ruleName', use: '" + StringUtil.shortenTextWithEllipsis(replacement, maxReplacementLength, 0, true) + "'"
     }
 
     override fun getFamilyName(): String = "Replace with suggested text"
