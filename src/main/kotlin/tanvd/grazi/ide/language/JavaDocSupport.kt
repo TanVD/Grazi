@@ -9,6 +9,7 @@ import com.intellij.psi.impl.source.javadoc.PsiDocTagImpl
 import com.intellij.psi.impl.source.javadoc.PsiDocTokenImpl
 import com.intellij.psi.impl.source.tree.LeafPsiElement
 import com.intellij.psi.tree.java.IJavaDocElementType
+import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import tanvd.grazi.model.TextBlock
 import tanvd.grazi.grammar.*
