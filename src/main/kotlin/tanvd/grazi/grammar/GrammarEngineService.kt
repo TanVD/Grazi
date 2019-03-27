@@ -17,6 +17,10 @@ class GrammarEngineService {
     private val languages = Languages()
     private val separators = listOf("\n\n", "\n", ".", " ")
     var enabledLangs = arrayListOf("en")
+        set(value) {
+            field = value
+            grammarCache.reset()
+        }
     private val newChecksPerTime = 10000
 
     val disabledRules = arrayListOf(RuleMatch.Type.UnknownWord)
@@ -62,7 +66,7 @@ class GrammarEngineService {
         val fixes = tryRun { languages.getLangChecker(str, enabledLangs).check(str) }.orEmpty()
                 .filterNotNull()
                 .filter { it.type !in disabledRules && it.typoCategory !in disabledCategories }
-                .map { Typo(it.toIntRange(), it.shortMessage, it.typoCategory, it.suggestedReplacements) }
+                .map { Typo(it) }
         checksDone++
 
         grammarCache.set(str, fixes)
