@@ -49,8 +49,6 @@ class JavaDocSupport : LanguageSupport {
                 val problemDescriptorsForComments = fixesForText.map {
                     val token = commentTokens[mappings.get(it.range.start)!!.second]
                     it.range = IntRange(mappings.get(it.range.start)!!.first, mappings.get(it.range.endInclusive)!!.first)
-                    println(it)
-                    println(token.text)
                     typoToProblemDescriptors(it, TextBlock(token, token.text), manager, isOnTheFly, ext)
                 }
 
