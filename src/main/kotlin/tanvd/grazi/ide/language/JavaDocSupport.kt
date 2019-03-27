@@ -2,7 +2,7 @@ package tanvd.grazi.ide.language
 
 
 import com.intellij.openapi.util.TextRange
-import com.intellij.psi.*
+import com.intellij.psi.PsiFile
 import com.intellij.psi.impl.PsiElementFactoryImpl
 import com.intellij.psi.impl.PsiManagerEx
 import com.intellij.psi.impl.source.javadoc.PsiDocCommentImpl
