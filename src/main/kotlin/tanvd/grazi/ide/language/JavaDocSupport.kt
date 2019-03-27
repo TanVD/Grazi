@@ -35,7 +35,11 @@ class JavaDocSupport : LanguageSupport {
                     if (i < curAdd + commentTokens[curTokenInd].text.length) {
                         mappings[i] = i - curAdd to curTokenInd
                     } else if (i == curAdd + commentTokens[curTokenInd].text.length) {
-                        mappings[i] = i - 1 - curAdd to curTokenInd
+                        if (i == commentTokensText.length - 1) {
+                            mappings[i] = i - 1 - curAdd to curTokenInd
+                        } else {
+                            mappings[i] = i - curAdd to curTokenInd
+                        }
                         curAdd += commentTokens[curTokenInd].text.length + 1
                         curTokenInd += 1
                     }
