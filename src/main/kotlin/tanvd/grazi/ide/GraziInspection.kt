@@ -9,7 +9,7 @@ import tanvd.grazi.grammar.GrammarEngineService
 import tanvd.grazi.ide.language.LanguageSupport
 import tanvd.grazi.model.TextBlock
 
-class GraziInspection : AbstractBaseJavaLocalInspectionTool() {
+class GraziInspection : LocalInspectionTool() {
     companion object {
         val EP_NAME = ExtensionPointName.create<LanguageSupport>("tanvd.grazi.languageSupport")
     }
@@ -40,35 +40,5 @@ class GraziInspection : AbstractBaseJavaLocalInspectionTool() {
             }
         }
         return result.toTypedArray()
-    }
-
-    override fun checkMethod(method: PsiMethod, manager: InspectionManager, isOnTheFly: Boolean): Array<ProblemDescriptor>? {
-        for (ext in Extensions.getExtensions(EP_NAME)) {
-            val blocks = ext.extract(method)
-            if (blocks != null) {
-                return checkBlocks(blocks, manager, isOnTheFly, ext)
-            }
-        }
-        return emptyArray()
-    }
-
-    override fun checkClass(aClass: PsiClass, manager: InspectionManager, isOnTheFly: Boolean): Array<ProblemDescriptor>? {
-        for (ext in Extensions.getExtensions(EP_NAME)) {
-            val blocks = ext.extract(aClass)
-            if (blocks != null) {
-                return checkBlocks(blocks, manager, isOnTheFly, ext)
-            }
-        }
-        return emptyArray()
-    }
-
-    override fun checkField(field: PsiField, manager: InspectionManager, isOnTheFly: Boolean): Array<ProblemDescriptor>? {
-        for (ext in Extensions.getExtensions(EP_NAME)) {
-            val blocks = ext.extract(field)
-            if (blocks != null) {
-                return checkBlocks(blocks, manager, isOnTheFly, ext)
-            }
-        }
-        return emptyArray()
     }
 }

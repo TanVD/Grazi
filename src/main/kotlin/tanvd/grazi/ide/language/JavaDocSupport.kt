@@ -10,20 +10,8 @@ import com.intellij.psi.util.PsiTreeUtil
 import tanvd.grazi.model.TextBlock
 
 class JavaDocSupport : LanguageSupport {
-    override fun extract(cls: PsiClass): List<TextBlock>? {
-        return PsiTreeUtil.collectElementsOfType(cls, PsiDocCommentImpl::class.java).map {
-            TextBlock(it, it.text)
-        }
-    }
-
-    override fun extract(field: PsiField): List<TextBlock>? {
-        return PsiTreeUtil.collectElementsOfType(field, PsiDocCommentImpl::class.java).map {
-            TextBlock(it, it.text)
-        }
-    }
-
-    override fun extract(method: PsiMethod): List<TextBlock>? {
-        return PsiTreeUtil.collectElementsOfType(method, PsiDocCommentImpl::class.java).map {
+    override fun extract(file: PsiFile): List<TextBlock>? {
+        return PsiTreeUtil.collectElementsOfType(file, PsiDocCommentImpl::class.java).map {
             TextBlock(it, it.text)
         }
     }
