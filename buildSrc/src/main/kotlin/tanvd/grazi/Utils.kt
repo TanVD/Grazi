@@ -13,7 +13,7 @@ fun Project.gitBranch(): String {
 val Project.channel: String
     get() {
         val branch = gitBranch()
-        if (branch == "master") {
+        if (branch.startsWith("master")) {
             return "stable"
         }
         return branch
