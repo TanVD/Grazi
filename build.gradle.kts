@@ -4,11 +4,11 @@ import tanvd.grazi.Versions
 import tanvd.grazi.channel
 
 group = "tanvd.grazi"
-version = "2019.1-2.$channel"
+version = "2019.2-1.$channel"
 
 
 plugins {
-    id("tanvd.kosogor") version "1.0.4" apply true
+    id("tanvd.kosogor") version "1.0.5" apply true
     id("io.gitlab.arturbosch.detekt") version ("1.0.0-RC14") apply true
     id("org.jetbrains.intellij") version "0.4.5" apply true
     kotlin("jvm") version "1.3.31" apply true
@@ -21,15 +21,13 @@ repositories {
 
 intellij {
     pluginName = "Grazi"
-    version = "2019.1"
+    version = "IC-LATEST-EAP-SNAPSHOT"
     downloadSources = true
 
-    updateSinceUntilBuild = false
-
     setPlugins(
-            "org.intellij.plugins.markdown:191.5849.16",
-            "org.jetbrains.kotlin:1.3.21-release-IJ2019.1-2",
-            "PythonCore:2019.1.191.6183.53"
+            "org.intellij.plugins.markdown:192.4488.21",
+            "org.jetbrains.kotlin:1.3.31-release-IJ2019.1-1",
+            "PythonCore:2019.2.192.4488.21"
     )
 }
 

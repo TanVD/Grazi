@@ -32,6 +32,10 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <h4>2019.2-1</h4>
+    <ul>
+        <li>Fixes for 2019.2 EAP</li>
+    </ul>
     <h4>2019.1-2</h4>
     <ul>
         <li>Support of commit messages proofreading</li>
@@ -54,9 +58,6 @@
     <depends optional="true" config-file="kotlin.xml">org.jetbrains.kotlin</depends>
     <depends optional="true" config-file="python.xml">com.intellij.modules.python</depends>
     <depends optional="true" config-file="java.xml">com.intellij.modules.java</depends>
-
-    <idea-version since-build="191"/>
-
 
     <project-components>
         <component>

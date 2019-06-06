@@ -3,7 +3,7 @@ package tanvd.grazi.ide
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElementVisitor
-import com.intellij.vcs.commit.BaseCommitMessageInspection
+import com.intellij.vcs.commit.message.BaseCommitMessageInspection
 
 
 class GraziCommitInspection : BaseCommitMessageInspection() {
