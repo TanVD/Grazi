@@ -39,6 +39,10 @@
         <li>Add ability to disable IDEA spellcheck globally</li>\
         <li>Support of Rust, JSON, JavaScript</li>
     </ul>
+    <h4>2019.2-2</h4>
+    <ul>
+        <li>Update since-until build</li>
+    </ul>
     <h4>2019.2-1</h4>
     <ul>
         <li>Fixes for 2019.2 EAP</li>
@@ -95,7 +99,6 @@
                                  key="grazi.name" bundle="messages.GraziBundle"/>
 
         <nameSuggestionProvider id="SpellCheckerSuggestions" implementation="tanvd.grazi.spellcheck.SpellCheckSuggestions" order="first"/>
-
     </extensions>
 
     <extensionPoints>
