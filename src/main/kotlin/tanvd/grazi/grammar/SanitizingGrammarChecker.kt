@@ -2,6 +2,7 @@ package tanvd.grazi.grammar
 
 import com.intellij.psi.PsiElement
 import tanvd.grazi.utils.*
+import tanvd.kex.*
 
 class SanitizingGrammarChecker(private val ignore: List<(CharSequence, Char) -> Boolean>,
                                private val replace: List<(CharSequence, Char) -> Char?>,
@@ -22,7 +23,8 @@ class SanitizingGrammarChecker(private val ignore: List<(CharSequence, Char) -> 
 
     fun <T : PsiElement> check(vararg tokens: T, getText: (T) -> String = { it.text }) = check(tokens.toList(), getText)
 
-    fun <T : PsiElement> check(tokens: Collection<T>, getText: (T) -> String = { it.text }, indexBasedIgnore: (T, Int) -> Boolean = { _, _ -> false }): Set<Typo> {
+    fun <T : PsiElement> check(tokens: Collection<T>, getText: (T) -> String = { it.text },
+                               indexBasedIgnore: (T, Int) -> Boolean = { _, _ -> false }): Set<Typo> {
         if (tokens.isEmpty()) return emptySet()
 
         val indexesShift = HashMap<Int, Int>()
@@ -39,7 +41,7 @@ class SanitizingGrammarChecker(private val ignore: List<(CharSequence, Char) -> 
                 for ((tokenIndex, char) in getText(token).withIndex()) {
                     //perform replacing of chan (depending on already seen string)
                     @Suppress("NAME_SHADOWING")
-                    val char = replace.firstNotNull { it(this, char) } ?: char
+                    val char = replace.untilNotNull { it(this, char) } ?: char
 
                     //check if char should be ignored
                     if (ignore.any { it(this, char) } || indexBasedIgnore(token, tokenIndex)) {
@@ -73,7 +75,7 @@ class SanitizingGrammarChecker(private val ignore: List<(CharSequence, Char) -> 
                     val startShift = sortedIndexesShift.lastOrNull { it.first <= typo.location.range.start }?.second ?: 0
                     val endShift = sortedIndexesShift.lastOrNull { it.first <= typo.location.range.endInclusive }?.second ?: 0
                     val newRange = IntRange(typo.location.range.start + startShift - range.start, typo.location.range.endInclusive + endShift - range.start)
-                    typo.copy(location = typo.location.copy(range = newRange, element = firstToken))
+                    typo.copy(location = typo.location.copy(range = newRange, pointer = firstToken.toPointer()))
                 } else null
             }
         }.toSet()

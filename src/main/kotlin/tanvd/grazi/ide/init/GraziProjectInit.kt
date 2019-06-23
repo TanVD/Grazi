@@ -1,19 +1,27 @@
 package tanvd.grazi.ide.init
 
 import com.intellij.codeInspection.ex.LocalInspectionToolWrapper
-import com.intellij.openapi.components.ProjectComponent
+import com.intellij.codeInspection.ex.modifyAndCommitProjectProfile
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.startup.StartupActivity
+import com.intellij.spellchecker.inspections.SpellCheckingInspection
+import com.intellij.util.Consumer
 import com.intellij.vcs.commit.message.CommitMessageInspectionProfile
+import tanvd.grazi.GraziConfig
 import tanvd.grazi.ide.GraziCommitInspection
 
-open class GraziProjectInit(private val project: Project) : ProjectComponent {
-    override fun getComponentName(): String {
-        return "GraziProjectInit"
-    }
+open class GraziProjectInit : StartupActivity, DumbAware {
+    override fun runActivity(project: Project) {
+        with(CommitMessageInspectionProfile.getInstance(project)) {
+            addTool(project, LocalInspectionToolWrapper(GraziCommitInspection()), emptyMap())
+            enableTool("GraziCommit", project)
+        }
 
-    override fun projectOpened() {
-        val inspectionProfile = CommitMessageInspectionProfile.getInstance(project)
-        inspectionProfile.addTool(project, LocalInspectionToolWrapper(GraziCommitInspection()), emptyMap())
-        inspectionProfile.enableTool("GraziCommit", project)
+        if (GraziConfig.state.disableIdeaSpellcheck) {
+            modifyAndCommitProjectProfile(project, Consumer {
+                it.disableToolByDefault(listOf(SpellCheckingInspection.SPELL_CHECKING_INSPECTION_TOOL_NAME), project)
+            })
+        }
     }
 }

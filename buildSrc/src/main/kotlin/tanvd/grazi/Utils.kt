@@ -13,8 +13,18 @@ fun Project.gitBranch(): String {
 val Project.channel: String
     get() {
         val branch = gitBranch()
-        if (branch.startsWith("master")) {
-            return "stable"
+        return when {
+            branch.startsWith("stable") -> {
+                "stable"
+            }
+            branch.startsWith("dev") -> {
+                "dev"
+            }
+            branch.startsWith("master") -> {
+                "nightly"
+            }
+            else -> {
+                error("Branch $branch can not be casted to channel name")
+            }
         }
-        return branch
     }

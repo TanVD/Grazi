@@ -10,6 +10,7 @@ class GraziConfig : PersistentStateComponent<GraziConfig.State> {
     data class State(@Property val enabledLanguages: MutableSet<Lang> = hashSetOf(Lang.AMERICAN_ENGLISH),
                      @Property var nativeLanguage: Lang = enabledLanguages.first(),
                      @Property var enabledSpellcheck: Boolean = false,
+                     @Property var disableIdeaSpellcheck: Boolean = false,
                      @Property val userWords: MutableSet<String> = HashSet(),
                      @Property val userDisabledRules: MutableSet<String> = HashSet(),
                      @Property var lastSeenVersion: String? = null)
@@ -17,7 +18,7 @@ class GraziConfig : PersistentStateComponent<GraziConfig.State> {
     companion object {
         val instance: GraziConfig by lazy { if (GraziPlugin.isTest) GraziConfig() else ServiceManager.getService(GraziConfig::class.java) }
 
-        val state: GraziConfig.State
+        val state: State
             get() = instance.state
     }
 

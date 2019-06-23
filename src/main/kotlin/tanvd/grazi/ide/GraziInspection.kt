@@ -1,55 +1,76 @@
 package tanvd.grazi.ide
 
 import com.intellij.codeInspection.*
-import com.intellij.openapi.extensions.ExtensionPointName
-import com.intellij.openapi.util.TextRange
-import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiElementVisitor
 import tanvd.grazi.grammar.Typo
 import tanvd.grazi.ide.language.LanguageSupport
 import tanvd.grazi.ide.quickfix.*
 import tanvd.grazi.spellcheck.IdeaSpellchecker
-import tanvd.grazi.utils.buildList
+import tanvd.grazi.utils.isSpellingTypo
+import tanvd.grazi.utils.toSelectionRange
+import tanvd.kex.buildList
 
 class GraziInspection : LocalInspectionTool() {
     companion object {
-        val EP_NAME = ExtensionPointName.create<LanguageSupport>("tanvd.grazi.languageSupport")
+        private fun getProblemMessage(fix: Typo): String {
+            //language=HTML
+            return """
+            <html>
+                <body>
+                <p>${fix.info.rule.description}</p>
+                ${if (!fix.isSpellingTypo) """
+                    <p></p>
+                    ${if (fix.info.rule.incorrectExamples.isNotEmpty()) """
+                        <p><strong>Incorrect:</strong>&nbsp;${fix.info.rule.incorrectExamples.first().example}</p>""" else ""}
+                    ${if (fix.info.rule.correctExamples.isNotEmpty()) """
+                        <p><strong>Correct:</strong>&nbsp;${fix.info.rule.correctExamples.first().example}</p>""" else ""}    
+                """.trimIndent() else ""}
+                </body>
+            </html>
+            """.trimIndent()
+        }
 
-        private fun createProblemDescriptor(fix: Typo, manager: InspectionManager, isOnTheFly: Boolean): ProblemDescriptor {
-            val end = if (fix.location.element!!.textLength >= fix.location.range.endInclusive + 1)
-                fix.location.range.endInclusive + 1
-            else
-                fix.location.range.endInclusive
-
-            val fixes = buildList<LocalQuickFix> {
-                if (fix.info.rule.isDictionaryBasedSpellingRule) {
-                    add(GraziAddWord(fix))
-                }
-
-                if (fix.fixes.isNotEmpty() && isOnTheFly) {
-                    if (fix.location.shouldUseRename) {
-                        add(GraziRenameTypo(fix))
-                    } else {
-                        add(GraziReplaceTypo(fix))
+        private fun createProblemDescriptor(fix: Typo, manager: InspectionManager, isOnTheFly: Boolean): ProblemDescriptor? {
+            return fix.location.element?.let { element ->
+                val fixes = buildList<LocalQuickFix> {
+                    if (fix.info.rule.isDictionaryBasedSpellingRule) {
+                        add(GraziAddWord(fix))
                     }
+
+                    if (fix.fixes.isNotEmpty() && isOnTheFly) {
+                        if (fix.location.shouldUseRename) {
+                            add(GraziRenameTypo(fix))
+                        } else {
+                            add(GraziReplaceTypo(fix))
+                        }
+                    }
+
+                    add(GraziDisableRule(fix))
                 }
 
-                add(GraziDisableRule(fix))
+                manager.createProblemDescriptor(element, fix.toSelectionRange(), getProblemMessage(fix),
+                        fix.info.category.highlight, isOnTheFly, *fixes.toTypedArray())
             }
-
-            return manager.createProblemDescriptor(fix.location.element, TextRange.create(fix.location.range.start, end),
-                    fix.info.description, fix.info.category.highlight,
-                    isOnTheFly, *fixes.toTypedArray())
         }
     }
 
-    override fun checkFile(file: PsiFile, manager: InspectionManager, isOnTheFly: Boolean): Array<ProblemDescriptor>? {
-        IdeaSpellchecker.init(file.project)
+    override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
+        return object : PsiElementVisitor() {
+            override fun visitElement(element: PsiElement?) {
+                element ?: return
+                IdeaSpellchecker.init(element.project)
 
-        val result = mutableListOf<ProblemDescriptor>()
-        for (ext in LanguageSupport.all.filter { it.isSupported(file) }) {
-            val typos = ext.getFixes(file)
-            result += typos.map { createProblemDescriptor(it, manager, isOnTheFly) }
+                for (ext in LanguageSupport.all.filter { it.isSupported(element.language) && it.isRelevant(element) }) {
+                    val typos = ext.getFixes(element)
+                    val problems = typos.mapNotNull { createProblemDescriptor(it, holder.manager, isOnTheFly) }
+                    problems.forEach {
+                        holder.registerProblem(it)
+                    }
+                }
+
+                super.visitElement(element)
+            }
         }
-        return result.toTypedArray()
     }
 }
