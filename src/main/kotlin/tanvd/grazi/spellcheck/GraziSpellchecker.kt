@@ -1,5 +1,11 @@
 package tanvd.grazi.spellcheck
 
+import com.intellij.lang.Language
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.TextRange
+import com.intellij.psi.PsiElement
+import com.intellij.spellchecker.inspections.Splitter
+import com.intellij.spellchecker.tokenizer.TokenConsumer
 import org.languagetool.*
 import tanvd.grazi.GraziConfig
 import tanvd.grazi.grammar.Typo
@@ -15,25 +21,47 @@ object GraziSpellchecker {
     private const val cacheExpireAfterMinutes = 5
     private val checkerLang = Lang.AMERICAN_ENGLISH
 
-    private val whiteSpaceSeparators = listOf(' ', '\t')
-    private val nameSeparators = listOf('.', '_', '-', '&')
-    private val trimmed = listOf('$', '%', '{', '}', ';', '\\', '@', '[', ']', '<', '>')
-
-    private val ignorePatters: List<(String) -> Boolean> = listOf(
-            { it -> it.startsWith(".") },
-            { it -> it.isUrl() },
-            { it -> it.isHtmlPlainTextTag() },
-            { it -> it.isFilePath() })
+    private val ignorePatters: List<(String) -> Boolean> = listOf(Text::isHiddenFile, Text::isURL, Text::isHtmlUnicodeSymbol, Text::isFilePath)
 
     private fun createChecker(): JLanguageTool {
         val cache = ResultCache(cacheMaxSize, cacheExpireAfterMinutes, TimeUnit.MINUTES)
-        return JLanguageTool(checkerLang.jlanguage, GraziConfig.state.nativeLanguage.jlanguage,
+        return JLanguageTool(checkerLang.jLanguage, GraziConfig.state.nativeLanguage.jLanguage,
                 cache, UserConfig(GraziConfig.state.userWords.toList())).apply {
-            disableRules(allActiveRules.filter { !it.isDictionaryBasedSpellingRule }.map { it.id })
+            disableRules(allRules.filter { !it.isDictionaryBasedSpellingRule }.map { it.id })
         }
     }
 
     private var checker: JLanguageTool = createChecker()
+
+    private class GraziTokenConsumer(val project: Project, val language: Language) : TokenConsumer() {
+        val result = HashSet<Typo>()
+
+        override fun consumeToken(element: PsiElement, text: String, useRename: Boolean,
+                                  offset: Int, rangeToCheck: TextRange, splitter: Splitter) {
+            splitter.split(text, rangeToCheck) { partRange ->
+                if (partRange != null) {
+                    val part = partRange.substring(text)
+                    if (!ignorePatters.any { it(part) }) {
+                        val typos = check(part, project, language)
+                        result.addAll(typos.map { typo ->
+                            typo.copy(location = typo.location.copy(range = typo.location.range.withOffset(offset + partRange.startOffset),
+                                    pointer = element.toPointer(), shouldUseRename = useRename))
+                        })
+                    }
+                }
+            }
+        }
+    }
+
+    fun getFixes(element: PsiElement): Set<Typo> {
+        val strategy = IdeaSpellchecker.getSpellcheckingStrategy(element)
+        if (strategy != null) {
+            val consumer = GraziTokenConsumer(element.project, element.language)
+            strategy.getTokenizer(element).tokenize(element, consumer)
+            return consumer.result.spellcheckOnly()
+        }
+        return emptySet()
+    }
 
     /**
      * Checks text for spelling mistakes.
@@ -43,30 +71,15 @@ object GraziSpellchecker {
      *
      * Note, that casing typos (suggestion includes the same word but in different casing) are ignored.
      */
-    fun check(text: String) = buildSet<Typo> {
-        if (!GraziConfig.state.enabledSpellcheck) return@buildSet
-
-        for ((bigWordRange, bigWord) in text.splitWithRanges(whiteSpaceSeparators)) {
-            if (ignorePatters.any { it(bigWord) }) continue
-
-            for ((onePieceWordRange, onePieceWord) in bigWord.splitWithRanges(nameSeparators, insideOf = bigWordRange)) {
-                val (trimmedWordRange, trimmedWord) = onePieceWord.trimWithRange(trimmed, insideOf = onePieceWordRange)
-                if (trimmedWordRange == null) continue
-
-                for ((inWordRange, word) in trimmedWord.splitCamelCase(insideOf = trimmedWordRange)) {
-                    val typo = tryRun { checker.check(word) }?.firstOrNull()
-                            ?.let { Typo(it, checkerLang, inWordRange.start) }
-                    if (typo != null && IdeaSpellchecker.hasProblem(word) && !isCasingProblem(word, typo)) {
-                        add(typo)
-                    }
-                }
-            }
+    private fun check(word: String, project: Project, language: Language) = buildSet<Typo> {
+        val typo = tryRun { checker.check(word) }?.firstOrNull()?.let { Typo(it, checkerLang, 0) }
+        if (typo != null && IdeaSpellchecker.hasProblem(word, project, language) && !isCasingProblem(word, typo)) {
+            add(typo)
         }
     }
 
     private fun isCasingProblem(word: String, typo: Typo): Boolean {
-        val lowerWord = word.toLowerCase()
-        return typo.fixes.any { it.toLowerCase() == lowerWord }
+        return typo.fixes.any { it.toLowerCase() == word.toLowerCase() }
     }
 
     fun reset() {

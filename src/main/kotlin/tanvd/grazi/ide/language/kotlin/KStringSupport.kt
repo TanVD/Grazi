@@ -9,9 +9,9 @@ import tanvd.grazi.grammar.*
 import tanvd.grazi.ide.language.LanguageSupport
 import tanvd.grazi.utils.filterFor
 
-class KStringSupport : LanguageSupport(GraziBundle.langConfigSet("global.literal_string.disabled")) {
+class KStringSupport : LanguageSupport(GraziBundle.langConfig("global.literal_string.disabled")) {
     companion object {
-        fun isExpressionEntry(entry: KtStringTemplateEntry) = entry is KtStringTemplateEntryWithExpression || entry is KtSimpleNameStringTemplateEntry
+        private fun isExpressionEntry(entry: KtStringTemplateEntry) = entry is KtStringTemplateEntryWithExpression || entry is KtSimpleNameStringTemplateEntry
     }
 
     override fun isSupported(language: Language): Boolean {
@@ -25,11 +25,11 @@ class KStringSupport : LanguageSupport(GraziBundle.langConfigSet("global.literal
     override fun check(element: PsiElement): Set<Typo> {
         require(element is KtStringTemplateExpression) { "Got not KtStringTemplateExpression in a KStringSupport" }
 
-        val ignoreFilter = IgnoreTokensFilter()
+        val ignoreFilter = TokensFilter()
         val entries = element.filterFor<KtLiteralStringTemplateEntry>()
 
         ignoreFilter.populate<KtLiteralStringTemplateEntry, KtStringTemplateEntry>(entries, addSiblingIf = { isExpressionEntry(it) })
 
-        return ignoreFilter.filter(SanitizingGrammarChecker.default.check(entries))
+        return ignoreFilter.filter(GrammarChecker.default.check(entries))
     }
 }

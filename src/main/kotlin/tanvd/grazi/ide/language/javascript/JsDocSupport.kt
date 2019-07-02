@@ -5,11 +5,11 @@ import com.intellij.lang.javascript.JSLanguageDialect
 import com.intellij.lang.javascript.psi.jsdoc.JSDocComment
 import com.intellij.psi.PsiElement
 import tanvd.grazi.GraziBundle
-import tanvd.grazi.grammar.SanitizingGrammarChecker
+import tanvd.grazi.grammar.GrammarChecker
 import tanvd.grazi.grammar.Typo
 import tanvd.grazi.ide.language.LanguageSupport
 
-class JsDocSupport : LanguageSupport(GraziBundle.langConfigSet("global.literal_string.disabled")) {
+class JsDocSupport : LanguageSupport(GraziBundle.langConfig("global.literal_string.disabled")) {
     override fun isSupported(language: Language): Boolean {
         return language is JSLanguageDialect
     }
@@ -23,7 +23,7 @@ class JsDocSupport : LanguageSupport(GraziBundle.langConfigSet("global.literal_s
 
         val langRanges = element.children.map { it.textRangeInParent }
 
-        return SanitizingGrammarChecker.default.check(setOf(element), indexBasedIgnore = { _, index ->
+        return GrammarChecker.default.check(setOf(element), indexBasedIgnore = { _, index ->
             langRanges.any { it.contains(index) }
         })
     }

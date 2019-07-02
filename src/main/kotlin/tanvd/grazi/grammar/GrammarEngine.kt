@@ -4,69 +4,58 @@ import com.intellij.openapi.progress.ProgressManager
 import tanvd.grazi.GraziConfig
 import tanvd.grazi.language.LangDetector
 import tanvd.grazi.language.LangTool
-import tanvd.grazi.spellcheck.GraziSpellchecker
-import tanvd.grazi.utils.isBlankWithNewLines
 import tanvd.grazi.utils.splitWithRanges
-import tanvd.kex.buildSet
-import tanvd.kex.tryRun
+import tanvd.kex.*
 
 object GrammarEngine {
+    //TODO In case of very big texts we may analyze only visible by user text, not all. Then we will not need such limitations
+    private const val tooBigChars = 50_000
     private const val maxChars = 10_000
     private const val minChars = 2
 
-    private val separators = listOf('\n', '?', '!', '.', ';', ',', ' ', '\t')
+    private val separators = listOf('?', '!', '.', ';', ',', ' ', '\t')
 
     /** Grammar checker will perform only spellcheck for sentences with fewer words */
     private const val minNumberOfWords = 3
 
     private fun isSmall(str: String) = str.length < minChars
     private fun isBig(str: String) = str.length > maxChars
+    private fun isTooBig(str: String) = str.length > tooBigChars
 
-    fun getFixes(str: String, seps: List<Char> = separators): Set<Typo> = buildSet {
-        if (str.isBlankWithNewLines()) return@buildSet
+    fun getFixes(str: String, seps: List<Char> = separators.filter { it in str }): Set<Typo> = buildSet {
+        if (str.isBlank() || isTooBig(str)) return@buildSet
 
         if (str.split(Regex("\\s+")).size < minNumberOfWords) {
-            addAll(GraziSpellchecker.check(str))
             return@buildSet
         }
 
-        val head = seps.first()
-        val tail = seps.drop(1)
+        if (!isBig(str)) {
+            addAll(getFixesSmall(str).map {
+                Typo(it.location, it.info, it.fixes)
+            })
+        } else {
+            val head = seps.first()
+            val tail = seps.drop(1)
 
-        for ((range, sentence) in str.splitWithRanges(head)) {
-            val stringFixes = if (isBig(sentence) && tail.isNotEmpty()) {
-                getFixes(sentence, tail)
-            } else {
-                getFixesSmall(sentence)
-            }.map {
-                Typo(it.location.withOffset(range.start), it.info, it.fixes)
+            str.splitWithRanges(head) { range, sentence ->
+                addAll(getFixes(sentence, tail).map {
+                    Typo(it.location.withOffset(range.start), it.info, it.fixes)
+                })
+
+                ProgressManager.checkCanceled()
             }
-            addAll(stringFixes)
         }
     }
 
-    private fun getFixesSmall(str: String) = buildSet<Typo> {
-        if (isSmall(str)) return@buildSet
+    private fun getFixesSmall(str: String): LinkedSet<Typo> {
+        if (isSmall(str)) return LinkedSet()
 
-        val lang = LangDetector.getLang(str, GraziConfig.state.enabledLanguages.toList()) ?: return@buildSet
+        val lang = LangDetector.getLang(str, GraziConfig.state.enabledLanguages.toList()) ?: return LinkedSet()
 
-        val allFixes = tryRun { LangTool[lang].check(str) }
+        return tryRun { LangTool[lang].check(str) }
                 .orEmpty()
                 .filterNotNull()
                 .map { Typo(it, lang) }
                 .let { LinkedHashSet(it) }
-
-        ProgressManager.checkCanceled()
-
-        val withoutTypos = allFixes.filterNot { it.info.rule.isDictionaryBasedSpellingRule }.toSet()
-        val verifiedTypos = allFixes.filter { it.info.rule.isDictionaryBasedSpellingRule }.filter {
-            !lang.isEnglish() || str.subSequence(it.location.range).split(Regex("\\s")).flatMap { part -> GraziSpellchecker.check(part) }.isNotEmpty()
-        }.toSet()
-
-        if (GraziConfig.state.enabledSpellcheck) {
-            addAll(withoutTypos + verifiedTypos)
-        } else {
-            addAll(withoutTypos)
-        }
     }
 }

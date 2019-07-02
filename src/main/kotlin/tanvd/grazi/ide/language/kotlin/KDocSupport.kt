@@ -7,14 +7,14 @@ import org.jetbrains.kotlin.kdoc.lexer.KDocTokens
 import org.jetbrains.kotlin.kdoc.parser.KDocElementTypes
 import org.jetbrains.kotlin.kdoc.psi.impl.KDocTag
 import org.jetbrains.kotlin.lexer.KtTokens
-import tanvd.grazi.grammar.SanitizingGrammarChecker
+import tanvd.grazi.grammar.GrammarChecker
 import tanvd.grazi.grammar.Typo
 import tanvd.grazi.ide.language.LanguageSupport
 import tanvd.grazi.utils.*
 
 class KDocSupport : LanguageSupport() {
     companion object {
-        val tagsIgnoredCategories = listOf(Typo.Category.CASING)
+        private val tagsIgnoredCategories = listOf(Typo.Category.CASING)
 
         private fun isInTag(token: PsiElement) = token.node.hasParentOfTypes(KDocElementTypes.KDOC_TAG)
         private fun isTag(token: PsiElement) = token.node.elementType == KDocElementTypes.KDOC_TAG
@@ -44,12 +44,12 @@ class KDocSupport : LanguageSupport() {
 
         return when {
             isTag(element) -> {
-                SanitizingGrammarChecker.default.check(element.filterForTokens<PsiElement>(KDocTokens.TEXT, KtTokens.IDENTIFIER)
+                GrammarChecker.default.check(element.filterForTokens<PsiElement>(KDocTokens.TEXT, KtTokens.IDENTIFIER)
                         .dropFirstIf { isIdentifier(it) })
                         .filterNot { it.info.category in tagsIgnoredCategories }
             }
             else -> {
-                SanitizingGrammarChecker.default.check(element.filterForTokens<PsiElement>(KDocTokens.TEXT, KtTokens.IDENTIFIER)
+                GrammarChecker.default.check(element.filterForTokens<PsiElement>(KDocTokens.TEXT, KtTokens.IDENTIFIER)
                         .filter { !isInTag(it) && (isBody(it) || isIdentifier(it)) })
             }
         }.toSet()

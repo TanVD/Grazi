@@ -1,33 +1,18 @@
 package tanvd.grazi.ide.language.xml
 
 import com.intellij.lang.Language
+import com.intellij.lang.xml.XMLLanguage
 import com.intellij.psi.PsiElement
 import com.intellij.psi.xml.XmlFile
 import com.intellij.psi.xml.XmlText
-import org.apache.xmlbeans.XmlLanguage
-import tanvd.grazi.grammar.SanitizingGrammarChecker
+import tanvd.grazi.grammar.GrammarChecker
 import tanvd.grazi.grammar.Typo
 import tanvd.grazi.ide.language.LanguageSupport
-import tanvd.grazi.utils.*
-import tanvd.kex.ifTrue
-import tanvd.kex.orTrue
+import tanvd.grazi.utils.filterFor
 
 class XmlSupport : LanguageSupport() {
-    companion object {
-        val xmlChecker = SanitizingGrammarChecker(
-                ignore = listOf({ str, cur ->
-                    str.lastOrNull()?.let { blankOrNewLineCharRegex.matches(it) }.orTrue() && blankOrNewLineCharRegex.matches(cur)
-                }),
-                replace = listOf({ _, cur ->
-                    newLineCharRegex.matches(cur).ifTrue { ' ' }
-                }),
-                ignoreToken = listOf({ str ->
-                    str.all { !it.isLetter() && it !in punctuationChars }
-                }))
-    }
-
     override fun isSupported(language: Language): Boolean {
-        return language is XmlLanguage
+        return language is XMLLanguage
     }
 
     override fun isRelevant(element: PsiElement): Boolean {
@@ -36,6 +21,6 @@ class XmlSupport : LanguageSupport() {
 
     override fun check(element: PsiElement): Set<Typo> {
         val xmlTexts = element.filterFor<XmlText>()
-        return xmlChecker.check(xmlTexts)
+        return GrammarChecker.default.check(xmlTexts)
     }
 }

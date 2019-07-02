@@ -1,10 +1,11 @@
 import org.jetbrains.intellij.tasks.PublishTask
+import org.jetbrains.intellij.tasks.RunIdeTask
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile
 import tanvd.grazi.Versions
 import tanvd.grazi.channel
 
 group = "tanvd.grazi"
-version = "2019.2-3.3.$channel"
+version = "2019.2-3.4.$channel"
 
 
 plugins {
@@ -32,6 +33,7 @@ intellij {
             "org.jetbrains.kotlin:1.3.31-release-IJ2019.1-1",
             "PythonCore:2019.2.192.4488.21",
             "org.rust.lang:0.2.99.2127-192",
+            "CSS",
             "JavaScriptLanguage"
     )
 }
@@ -42,6 +44,10 @@ tasks.withType<KotlinJvmCompile> {
         languageVersion = "1.3"
         apiVersion = "1.3"
     }
+}
+
+tasks.withType<RunIdeTask> {
+    jvmArgs("-Xmx1g")
 }
 
 tasks.withType<PublishTask> {
@@ -80,16 +86,11 @@ dependencies {
 
     compile("org.apache.commons", "commons-lang3", "3.5")
 
-
-    compile("tanvd.kex", "kex", "0.1.0")
-    compile("com.beust", "klaxon", "5.0.1")
-
-    testCompile("org.junit.jupiter", "junit-jupiter-api", "5.2.0")
-    testRuntime("org.junit.jupiter", "junit-jupiter-engine", "5.2.0")
+    compile("tanvd.kex", "kex", "0.1.1")
 }
 
 tasks.withType<Test> {
-    useJUnitPlatform()
+    useJUnit()
 
     testLogging {
         events("passed", "skipped", "failed")

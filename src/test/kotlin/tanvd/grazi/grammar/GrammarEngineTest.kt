@@ -1,39 +1,26 @@
 package tanvd.grazi.grammar
 
-import org.junit.Assert.assertEquals
-import org.junit.jupiter.api.*
-import tanvd.grazi.GraziConfig
-import tanvd.grazi.GraziPlugin
-import tanvd.grazi.spellcheck.IdeaSpellchecker
-import java.io.File
+import org.junit.Test
+import tanvd.grazi.GraziTestBase
+import tanvd.kex.Resources
 import kotlin.system.measureTimeMillis
 
-class GrammarEngineTest {
-    @BeforeEach
-    fun prepare() {
-        GraziPlugin.isTest = true
-        GraziPlugin.invalidateCaches()
-        GraziConfig.state.enabledSpellcheck = true
-
-        IdeaSpellchecker.init { true }
-
-        GraziPlugin.init()
-    }
+class GrammarEngineTest : GraziTestBase(true) {
 
     @Test
-    fun getFixes_emptyText_noTypos() {
+    fun `test empty text`() {
         val fixes = GrammarEngine.getFixes("")
         assertIsEmpty(fixes)
     }
 
     @Test
-    fun getFixes_correctText_noTypos() {
+    fun `test correct text`() {
         val fixes = GrammarEngine.getFixes("Hello world")
         assertIsEmpty(fixes)
     }
 
     @Test
-    fun getFixes_correctTextFewLines_noTypos() {
+    fun `test correct few lines text`() {
         val text = """
             |Hello world!
             |This is the start of a message.
@@ -45,91 +32,76 @@ class GrammarEngineTest {
 
 
     @Test
-    fun getFixes_oneLine_oneTypo() {
-        val text = "hello world, my dear friend"
+    fun `test one line text with typo`() {
+        val text = "Tot he world, my dear friend"
         val fixes = GrammarEngine.getFixes(text).toList()
-        fixes.single().assertTypoIs(Typo.Category.CASING, IntRange(0, 4), listOf("Hello"), text)
+        fixes.single().assertTypoIs(Typo.Category.TYPOS, IntRange(0, 5), listOf("To the"), text)
     }
 
     @Test
-    fun getFixes_typoOnAFirstLine_oneTypo() {
+    fun `test few lines text with typo on first line`() {
         val text = """
-            |hello world!
+            |Tot he world!
             |This is the start of a message.
-            |The end is also here world
+            |The end is also here world.
         """.trimMargin()
         val fixes = GrammarEngine.getFixes(text)
-        fixes.single().assertTypoIs(Typo.Category.CASING, IntRange(0, 4), listOf("Hello"), text)
+        fixes.single().assertTypoIs(Typo.Category.TYPOS, IntRange(0, 5), listOf("To the"), text)
     }
 
     @Test
-    fun getFixes_typoOnALastLine_oneTypo() {
+    fun `test few lines text with typo on last line`() {
         val text = """
             |Hello world!
             |This is the start of a message.
-            |The end is also here wrld
+            |It is a the friend.
         """.trimMargin()
         val fixes = GrammarEngine.getFixes(text)
-        fixes.single().assertTypoIs(Typo.Category.TYPOS, IntRange(66, 69), listOf("world"), text)
+        fixes.single().assertTypoIs(Typo.Category.GRAMMAR, IntRange(51, 55), listOf("a", "the"), text)
     }
 
     @Test
-    fun getFixes_oneLine_fewTypos() {
+    fun `test one line text with few typos`() {
         val text = "Hello. world,, tot he"
         val fixes = GrammarEngine.getFixes(text).toList()
-        assertEquals(3, fixes.size)
-        fixes[0].assertTypoIs(Typo.Category.CASING, IntRange(7, 11), listOf("World"), text)
-        fixes[1].assertTypoIs(Typo.Category.PUNCTUATION, IntRange(12, 13), listOf(","), text)
-        fixes[2].assertTypoIs(Typo.Category.TYPOS, IntRange(15, 20), listOf("to the"), text)
+        assertEquals(2, fixes.size)
+        fixes[0].assertTypoIs(Typo.Category.PUNCTUATION, IntRange(12, 13), listOf(","), text)
+        fixes[1].assertTypoIs(Typo.Category.TYPOS, IntRange(15, 20), listOf("to the"), text)
     }
 
     @Test
-    fun getFixes_fewTypos_oneLine() {
+    fun `test few lines text with few typos`() {
         val text = """
             |Hello. world,, tot he.
-            |This are my friend""".trimMargin()
+            |This are my friend.""".trimMargin()
         val fixes = GrammarEngine.getFixes(text).toList()
-        assertEquals(4, fixes.size)
-        fixes[0].assertTypoIs(Typo.Category.CASING, IntRange(7, 11), listOf("World"), text)
-        fixes[1].assertTypoIs(Typo.Category.PUNCTUATION, IntRange(12, 13), listOf(","), text)
-        fixes[2].assertTypoIs(Typo.Category.TYPOS, IntRange(15, 20), listOf("to the"), text)
-        fixes[3].assertTypoIs(Typo.Category.GRAMMAR, IntRange(23, 30), listOf("This is"), text)
+        assertEquals(3, fixes.size)
+        fixes[0].assertTypoIs(Typo.Category.PUNCTUATION, IntRange(12, 13), listOf(","), text)
+        fixes[1].assertTypoIs(Typo.Category.TYPOS, IntRange(15, 20), listOf("to the"), text)
+        fixes[2].assertTypoIs(Typo.Category.GRAMMAR, IntRange(23, 30), listOf("This is"), text)
     }
 
     @Test
-    fun getFixes_performance_middleSize() {
-        val text = File("src/test/resources/sonnet_10.txt").readText()
-        val grammar = GrammarEngine
+    fun `test performance with 10 sonnets`() {
+        val text = Resources.getText("grammar/sonnet_10.txt")
         var fixes: List<Typo> = emptyList()
         val totalTime = measureTimeMillis {
-            fixes = grammar.getFixes(text).toList()
+            fixes = GrammarEngine.getFixes(text).toList()
         }
         fixes.forEach { it.verify(text) }
-        assert(fixes.size > 100)
+        assert(fixes.size > 30)
         assert(totalTime < 10_000)
     }
 
     @Test
-    fun getFixes_performance_bigSize() {
-        val text = File("src/test/resources/sonnet_50.txt").readText()
+    fun `test performance with 50 sonnets`() {
+        val text = Resources.getText("grammar/sonnet_50.txt")
         var fixes: List<Typo> = emptyList()
         val totalTime = measureTimeMillis {
             fixes = GrammarEngine.getFixes(text).toList()
         }
         fixes.forEach { it.verify(text) }
-        assert(fixes.size > 500)
+        assert(fixes.size > 200)
         assert(totalTime < 20_000)
-    }
-
-    @Disabled
-    @Test
-    fun getFixes_performance_veryBigSize() {
-        val text = File("src/test/resources/pride_and_prejudice.txt").readText()
-        var fixes: List<Typo> = emptyList()
-        val totalTime = measureTimeMillis {
-            fixes = GrammarEngine.getFixes(text).toList()
-        }
-        fixes.forEach { it.verify(text) }
-        assert(totalTime < 180_000)
     }
 }

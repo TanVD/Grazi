@@ -2,14 +2,15 @@ package tanvd.grazi.grammar
 
 import com.intellij.psi.PsiElement
 import com.intellij.psi.SmartPsiElementPointer
-import tanvd.grazi.utils.*
+import tanvd.grazi.utils.isSpellingTypo
+import tanvd.grazi.utils.toPointer
 
 /**
  * Helper to set up masks to ignore inline elements in sequences of tokens.
  * Just use [populate] to add neighbours of inline elements to mask and then
  * use [filter] to filter out all typos, which may occur because of inline elements.
  */
-class IgnoreTokensFilter(private val ignoreSpellcheck: Boolean = false) {
+class TokensFilter(private val ignoreSpellcheck: Boolean = false) {
     private val leftNeighbour = HashSet<SmartPsiElementPointer<PsiElement>>()
     private val rightNeighbour = HashSet<SmartPsiElementPointer<PsiElement>>()
 
@@ -73,7 +74,7 @@ class IgnoreTokensFilter(private val ignoreSpellcheck: Boolean = false) {
     private fun Typo.isAtStart(): Boolean {
         var start = 0
         val element = location.pointer!!
-        while (start < element.element!!.text.length && start !in location.range && blankCharRegex.matches(element.element!!.text[start])) {
+        while (start < element.element!!.text.length && start !in location.range && element.element!!.text[start].isWhitespace()) {
             start++
         }
         return start in location.range
@@ -82,7 +83,7 @@ class IgnoreTokensFilter(private val ignoreSpellcheck: Boolean = false) {
     private fun Typo.isAtEnd(): Boolean {
         val element = location.pointer!!
         var start = element.element!!.text.length - 1
-        while (start >= 0 && start !in location.range && blankCharRegex.matches(element.element!!.text[start])) {
+        while (start >= 0 && start !in location.range && element.element!!.text[start].isWhitespace()) {
             start--
         }
         return start in location.range

@@ -7,28 +7,11 @@ import org.rust.lang.core.psi.RsLitExpr
 import org.rust.lang.core.psi.ext.stubKind
 import org.rust.lang.core.stubs.RsStubLiteralKind
 import tanvd.grazi.GraziBundle
-import tanvd.grazi.grammar.SanitizingGrammarChecker
+import tanvd.grazi.grammar.GrammarChecker
 import tanvd.grazi.grammar.Typo
 import tanvd.grazi.ide.language.LanguageSupport
-import tanvd.grazi.utils.*
-import tanvd.kex.ifTrue
-import tanvd.kex.orTrue
 
-class RsStringSupport : LanguageSupport(GraziBundle.langConfigSet("global.literal_string.disabled")) {
-    companion object {
-        val rust = SanitizingGrammarChecker(
-                ignore = listOf({ str, cur ->
-                    str.lastOrNull()?.let { blankOrNewLineCharRegex.matches(it) }.orTrue() && blankOrNewLineCharRegex.matches(cur)
-                }, { _, cur -> cur == '\"' }),
-                replace = listOf({ _, cur ->
-                    newLineCharRegex.matches(cur).ifTrue { ' ' }
-                }),
-                ignoreToken = listOf({ str ->
-                    str.all { !it.isLetter() }
-                }))
-
-    }
-
+class RsStringSupport : LanguageSupport(GraziBundle.langConfig("global.literal_string.disabled")) {
     override fun isSupported(language: Language): Boolean {
         return language is RsLanguage
     }
@@ -40,6 +23,6 @@ class RsStringSupport : LanguageSupport(GraziBundle.langConfigSet("global.litera
     override fun check(element: PsiElement): Set<Typo> {
         require(element is RsLitExpr) { "Got not RsLitExpr in a RsStringSupport" }
 
-        return rust.check(element)
+        return GrammarChecker.ignoringQuotes.check(element)
     }
 }
