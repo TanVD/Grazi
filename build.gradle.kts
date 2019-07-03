@@ -22,19 +22,20 @@ repositories {
 
 intellij {
     pluginName = "Grazi"
-    version = "IC-192.4488-EAP-CANDIDATE-SNAPSHOT"
+    version = "IC-192.5438-EAP-CANDIDATE-SNAPSHOT"
     downloadSources = true
     type = "IU"
 
     updateSinceUntilBuild = false
 
     setPlugins(
-            "org.intellij.plugins.markdown:192.4488.21",
-            "org.jetbrains.kotlin:1.3.31-release-IJ2019.1-1",
-            "PythonCore:2019.2.192.4488.21",
+            "markdown",
+            "PythonCore:2019.2.192.5438.14",
             "org.rust.lang:0.2.99.2127-192",
             "CSS",
-            "JavaScriptLanguage"
+            "JavaScriptLanguage",
+            "Kotlin",
+            "java"
     )
 }
 
