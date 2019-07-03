@@ -87,7 +87,7 @@ class GraziInspection : LocalInspectionTool() {
             if (fix.info.rule.description.length > 50 || (!fix.isSpellingTypo && fix.info.incorrectExample?.example?.length ?: 0 > 50)) {
                 return message.replaceFirst("<div>", "<div style='width: 300px;'>")
             }
-            return message
+            return message.filterOutNewLines()
         }
 
         private fun createProblemDescriptor(fix: Typo, manager: InspectionManager, isOnTheFly: Boolean): ProblemDescriptor? {
