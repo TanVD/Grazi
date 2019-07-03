@@ -3,7 +3,7 @@
     "id": "file",
     "value": "File",
     "popup": {
-      "menuitem": [
+      "menu_item": [
         {
           "<warning>valu</warning>": "New",
           "onclick": "CreateNewDoc()"
