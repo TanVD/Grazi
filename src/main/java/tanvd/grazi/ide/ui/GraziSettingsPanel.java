@@ -4,6 +4,7 @@ import com.intellij.openapi.options.*;
 import com.intellij.ui.*;
 import org.jetbrains.annotations.*;
 import tanvd.grazi.*;
+import tanvd.grazi.ide.*;
 import tanvd.grazi.language.*;
 
 import javax.swing.*;
@@ -53,7 +54,7 @@ public class GraziSettingsPanel implements ConfigurableUi<GraziConfig> {
 
         settings.getState().setEnabledSpellcheck(enableGraziSpellcheckCheckBox.isSelected());
 
-        GraziPlugin.Companion.reinit();
+        GraziLifecycle.Companion.getPublisher().reInit();
     }
 
     @Override
