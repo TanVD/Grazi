@@ -1,10 +1,10 @@
 package tanvd.grazi.ide
 
 import com.intellij.codeInspection.*
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 import tanvd.grazi.GraziConfig
-import tanvd.grazi.GraziPlugin
 import tanvd.grazi.grammar.Typo
 import tanvd.grazi.ide.language.LanguageSupport
 import tanvd.grazi.ide.quickfix.*
@@ -17,7 +17,7 @@ class GraziInspection : LocalInspectionTool() {
 
 
         private fun getProblemMessage(fix: Typo): String {
-            if (GraziPlugin.isTest) return ""
+            if (ApplicationManager.getApplication().isUnitTestMode) return ""
 
             val message = if (fix.isSpellingTypo) {
                 //language=HTML
@@ -118,15 +118,14 @@ class GraziInspection : LocalInspectionTool() {
 
                 val typos = HashSet<Typo>()
 
-                for (ext in LanguageSupport.all.filter { it.isSupported(element.language) && it.isRelevant(element) }) {
-                    typos.addAll(ext.getFixes(element))
+                for (ext in LanguageSupport.allForLanguage(element.language).filter { it.isRelevant(element) }) {
+                    typos.addAll(ext.getTypos(element))
                 }
 
                 if (GraziConfig.state.enabledSpellcheck) {
-                    typos.addAll(GraziSpellchecker.getFixes(element))
+                    typos.addAll(GraziSpellchecker.getTypos(element))
                 }
-
-
+                
                 typos.mapNotNull { createProblemDescriptor(it, holder.manager, isOnTheFly) }.forEach {
                     holder.registerProblem(it)
                 }

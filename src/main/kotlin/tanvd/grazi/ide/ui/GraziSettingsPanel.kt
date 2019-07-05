@@ -6,7 +6,9 @@ import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.CheckBoxList
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBScrollPane
-import tanvd.grazi.*
+import tanvd.grazi.GraziBundle
+import tanvd.grazi.GraziConfig
+import tanvd.grazi.ide.GraziLifecycle
 import tanvd.grazi.language.Lang
 import java.awt.BorderLayout
 import java.awt.Font
@@ -38,7 +40,7 @@ class GraziSettingsPanel : ConfigurableUi<GraziConfig> {
 
         settings.state.nativeLanguage = cmbNativeLanguage.selectedItem as Lang
         settings.state.enabledSpellcheck = cbEnableGraziSpellcheck.isSelected
-        GraziPlugin.reinit()
+        GraziLifecycle.publisher.reInit()
     }
 
     override fun reset(settings: GraziConfig) {
