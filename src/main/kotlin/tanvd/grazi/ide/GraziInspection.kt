@@ -1,7 +1,9 @@
 package tanvd.grazi.ide
 
+import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.codeInspection.*
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.project.ProjectManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 import tanvd.grazi.GraziConfig
@@ -13,9 +15,7 @@ import tanvd.grazi.utils.*
 import tanvd.kex.buildList
 
 class GraziInspection : LocalInspectionTool() {
-    companion object {
-
-
+    companion object : GraziLifecycle {
         private fun getProblemMessage(fix: Typo): String {
             if (ApplicationManager.getApplication().isUnitTestMode) return fix.info.rule.id
 
@@ -37,7 +37,7 @@ class GraziInspection : LocalInspectionTool() {
                         //language=HTML
                         """
                             <tr style='padding-top: 5px;'>
-                                <td valign='top' style='color: gray;'>Incorrect:</td>
+                                <td style='color: gray;'>Incorrect:</td>
                                 <td>${it.toIncorrectHtml()}</td>
                             </tr>
                         """.trimIndent()
@@ -46,11 +46,11 @@ class GraziInspection : LocalInspectionTool() {
                         //language=HTML
                         """
                             <tr style='padding-top: 5px;'>
-                                <td valign='top'  style='color: gray;'>Incorrect:</td>
+                                <td style='color: gray;'>Incorrect:</td>
                                 <td style='text-align: left'>${it.toIncorrectHtml()}</td>
                             </tr>
                             <tr>
-                                <td valign='top'  style='color: gray;'>Correct:</td>
+                                <td style='color: gray;'>Correct:</td>
                                 <td style='text-align: left'>${it.toCorrectHtml()}</td>
                             </tr>
                         """.trimIndent()
@@ -109,6 +109,12 @@ class GraziInspection : LocalInspectionTool() {
                         fix.info.category.highlight, isOnTheFly, *fixes.toTypedArray())
             }
         }
+
+        override fun reset() {
+            ProjectManager.getInstance().openProjects.forEach {
+                DaemonCodeAnalyzer.getInstance(it).restart()
+            }
+        }
     }
 
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
@@ -125,7 +131,7 @@ class GraziInspection : LocalInspectionTool() {
                 if (GraziConfig.state.enabledSpellcheck) {
                     typos.addAll(GraziSpellchecker.getTypos(element))
                 }
-                
+
                 typos.mapNotNull { createProblemDescriptor(it, holder.manager, isOnTheFly) }.forEach {
                     holder.registerProblem(it)
                 }

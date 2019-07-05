@@ -6,7 +6,6 @@ import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.CheckBoxList
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBScrollPane
-import tanvd.grazi.GraziBundle
 import tanvd.grazi.GraziConfig
 import tanvd.grazi.ide.GraziLifecycle
 import tanvd.grazi.language.Lang
@@ -81,7 +80,6 @@ class GraziSettingsPanel : ConfigurableUi<GraziConfig> {
                             border = border(msg("grazi.ui.settings.languages.native.text"))
                             add(cmbNativeLanguage)
                         }
-
 
                         panel(BorderLayout(0, 0), BorderLayout.CENTER) {
                             border = border(msg("grazi.ui.settings.languages.text"))

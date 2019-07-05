@@ -19,7 +19,7 @@ object LangTool : GraziLifecycle {
                     cache, UserConfig(GraziConfig.state.userWords.toList())).apply {
                 lang.configure(this)
                 disableRules(allActiveRules.map { it.id }.filter { it in GraziConfig.state.userDisabledRules })
-                //Spellcheck will be done by Grazi spellchecker
+                //In case of English spellcheck will be done by Grazi spellchecker
                 if (lang.isEnglish()) {
                     disableRules(allActiveRules.filter { it.isDictionaryBasedSpellingRule }.map { it.id })
                 }
