@@ -90,7 +90,7 @@ class GraziSettingsPanel : ConfigurableUi<GraziConfig>, Disposable {
                                                         style = "color: gray;"
                                                         +msg("grazi.ui.settings.rules.rule.incorrect")
                                                     }
-                                                    td { unsafe { +it.toIncorrectHtml() } }
+                                                    td { toIncorrectHtml(it) }
                                                 }
                                             } else {
                                                 tr {
@@ -100,7 +100,7 @@ class GraziSettingsPanel : ConfigurableUi<GraziConfig>, Disposable {
                                                     }
                                                     td {
                                                         style = "text-align: left; width:99.9%"
-                                                        unsafe { +it.toIncorrectHtml() }
+                                                        toIncorrectHtml(it)
                                                     }
                                                 }
 
@@ -111,7 +111,7 @@ class GraziSettingsPanel : ConfigurableUi<GraziConfig>, Disposable {
                                                     }
                                                     td {
                                                         style = "text-align: left"
-                                                        unsafe { +it.toCorrectHtml() }
+                                                        toCorrectHtml(it)
                                                     }
                                                 }
                                             }

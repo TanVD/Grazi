@@ -12,6 +12,7 @@ import tanvd.grazi.GraziConfig
 import tanvd.grazi.grammar.Typo
 import tanvd.grazi.ide.language.LanguageSupport
 import tanvd.grazi.ide.quickfix.*
+import tanvd.grazi.ide.ui.msg
 import tanvd.grazi.spellcheck.GraziSpellchecker
 import tanvd.grazi.utils.*
 import tanvd.kex.buildList
@@ -30,7 +31,7 @@ class GraziInspection : LocalInspectionTool() {
                                     style = "width: 300px;"
                                 }
 
-                                p { unsafe { +fix.info.rule.toDescriptionSanitized() } }
+                                p { +fix.info.rule.toDescriptionSanitized() }
                             }
                         } else {
                             div {
@@ -44,7 +45,7 @@ class GraziInspection : LocalInspectionTool() {
                                             td {
                                                 colSpan = "2"
                                                 style = "padding-bottom: 3px;"
-                                                unsafe { +"${fix.word} &rarr; ${fix.fixes.take(3).joinToString(separator = "/")}" }
+                                                +"${fix.word} &rarr; ${fix.fixes.take(3).joinToString(separator = "/")}"
                                             }
                                         }
                                     }
@@ -52,7 +53,7 @@ class GraziInspection : LocalInspectionTool() {
                                     tr {
                                         td {
                                             colSpan = "2"
-                                            unsafe { +fix.info.rule.toDescriptionSanitized() }
+                                            +fix.info.rule.toDescriptionSanitized()
                                         }
                                     }
                                 }
@@ -65,20 +66,20 @@ class GraziInspection : LocalInspectionTool() {
                                                 style = "padding-top: 5px;"
                                                 td {
                                                     style = "color: gray;"
-                                                    +"Incorrect:"
+                                                    +msg("grazi.ui.settings.rules.rule.incorrect")
                                                 }
-                                                td { unsafe { +it.toIncorrectHtml() } }
+                                                td { toIncorrectHtml(it) }
                                             }
                                         } else {
                                             tr {
                                                 style = "padding-top: 5px;"
                                                 td {
                                                     style = "color: gray;"
-                                                    +"Incorrect:"
+                                                    +msg("grazi.ui.settings.rules.rule.incorrect")
                                                 }
                                                 td {
                                                     style = "text-align: left"
-                                                    unsafe { +it.toIncorrectHtml() }
+                                                    toIncorrectHtml(it)
                                                 }
                                             }
 
@@ -86,11 +87,11 @@ class GraziInspection : LocalInspectionTool() {
                                                 style = "padding-top: 5px;"
                                                 td {
                                                     style = "color: gray;"
-                                                    +"Correct:"
+                                                    +msg("grazi.ui.settings.rules.rule.correct")
                                                 }
                                                 td {
                                                     style = "text-align: left"
-                                                    unsafe { +it.toCorrectHtml() }
+                                                    toCorrectHtml(it)
                                                 }
                                             }
                                         }
