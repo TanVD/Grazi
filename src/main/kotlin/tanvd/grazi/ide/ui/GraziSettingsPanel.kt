@@ -2,6 +2,7 @@ package tanvd.grazi.ide.ui
 
 import com.intellij.ide.plugins.newui.VerticalLayout
 import com.intellij.openapi.options.ConfigurableUi
+import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.CheckBoxList
 import com.intellij.ui.components.JBCheckBox
@@ -29,6 +30,8 @@ class GraziSettingsPanel : ConfigurableUi<GraziConfig> {
     }
 
     override fun apply(settings: GraziConfig) {
+        val prevState = settings.state.copy()
+
         Lang.values().forEach {
             if (cblEnabledLanguages.isItemSelected(it.name)) {
                 settings.state.enabledLanguages.add(it)
@@ -40,6 +43,8 @@ class GraziSettingsPanel : ConfigurableUi<GraziConfig> {
         settings.state.nativeLanguage = cmbNativeLanguage.selectedItem as Lang
         settings.state.enabledSpellcheck = cbEnableGraziSpellcheck.isSelected
         GraziLifecycle.publisher.reInit()
+
+        ProjectManager.getInstance().openProjects.forEach { GraziLifecycle.publisher.update(prevState, settings.state, it) }
     }
 
     override fun reset(settings: GraziConfig) {
