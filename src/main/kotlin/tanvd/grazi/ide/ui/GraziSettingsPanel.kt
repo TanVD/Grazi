@@ -7,7 +7,6 @@ import com.intellij.ui.CheckBoxList
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBScrollPane
 import tanvd.grazi.GraziConfig
-import tanvd.grazi.ide.GraziLifecycle
 import tanvd.grazi.language.Lang
 import java.awt.BorderLayout
 import java.awt.Font
@@ -29,17 +28,20 @@ class GraziSettingsPanel : ConfigurableUi<GraziConfig> {
     }
 
     override fun apply(settings: GraziConfig) {
+        val state = settings.state.copy()
+
         Lang.values().forEach {
             if (cblEnabledLanguages.isItemSelected(it.name)) {
-                settings.state.enabledLanguages.add(it)
+                state.enabledLanguages.add(it)
             } else {
-                settings.state.enabledLanguages.remove(it)
+                state.enabledLanguages.remove(it)
             }
         }
 
-        settings.state.nativeLanguage = cmbNativeLanguage.selectedItem as Lang
-        settings.state.enabledSpellcheck = cbEnableGraziSpellcheck.isSelected
-        GraziLifecycle.publisher.reInit()
+        state.nativeLanguage = cmbNativeLanguage.selectedItem as Lang
+        state.enabledSpellcheck = cbEnableGraziSpellcheck.isSelected
+
+        GraziConfig.instance.loadState(state)
     }
 
     override fun reset(settings: GraziConfig) {
