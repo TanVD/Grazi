@@ -74,15 +74,22 @@ detekt {
 
 val langs = setOf("en", "ru", "fr", "de", "pl", "it", "zh", "ja", "uk", "el", "ro", "es", "pt", "sk", "fa", "nl")
 
+fun ExternalModuleDependency.excludesForLT() {
+    exclude("org.slf4j", "slf4j-api")
+    exclude("ml.dlmc", "xgboost4j")
+    exclude("com.typesafe.akka")
+    exclude("org.scala-lang")
+}
+
 dependencies {
     compileOnly(kotlin("stdlib"))
 
     compile("org.languagetool", "languagetool-core", Versions.languageTool) {
-        exclude("org.slf4j", "slf4j-api")
+        excludesForLT()
     }
     for (lang in langs) {
         compile("org.languagetool", "language-$lang", Versions.languageTool) {
-            exclude("org.slf4j", "slf4j-api")
+            excludesForLT()
         }
     }
 
