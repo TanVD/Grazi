@@ -9,13 +9,14 @@ import com.intellij.psi.PsiElementVisitor
 import tanvd.grazi.GraziConfig
 import tanvd.grazi.grammar.Typo
 import tanvd.grazi.ide.language.LanguageSupport
+import tanvd.grazi.ide.msg.GraziAppLifecycle
 import tanvd.grazi.ide.quickfix.*
 import tanvd.grazi.spellcheck.GraziSpellchecker
 import tanvd.grazi.utils.*
 import tanvd.kex.buildList
 
 class GraziInspection : LocalInspectionTool() {
-    companion object : GraziLifecycle {
+    companion object : GraziAppLifecycle {
         private fun getProblemMessage(fix: Typo): String {
             if (ApplicationManager.getApplication().isUnitTestMode) return fix.info.rule.id
 
