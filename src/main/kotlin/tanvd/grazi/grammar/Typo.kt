@@ -4,9 +4,13 @@ import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.lang.annotation.ProblemGroup
 import com.intellij.psi.PsiElement
 import com.intellij.psi.SmartPsiElementPointer
-import org.languagetool.rules.*
+import org.languagetool.rules.IncorrectExample
+import org.languagetool.rules.Rule
+import org.languagetool.rules.RuleMatch
 import tanvd.grazi.language.Lang
-import tanvd.grazi.utils.*
+import tanvd.grazi.utils.toIntRange
+import tanvd.grazi.utils.typoCategory
+import tanvd.grazi.utils.withOffset
 
 data class Typo(val location: Location, val info: Info, val fixes: List<String> = emptyList()) {
     data class Location(val range: IntRange, val pointer: SmartPsiElementPointer<PsiElement>? = null,
@@ -15,6 +19,24 @@ data class Typo(val location: Location, val info: Info, val fixes: List<String> 
             get() = pointer?.element
 
         fun withOffset(offset: Int) = copy(range = IntRange(range.start + offset, range.endInclusive + offset))
+
+        fun isAtStart(skipWhitespace: Boolean = true): Boolean {
+            var start = 0
+            val element = pointer!!
+            while (start < element.element!!.text.length && start !in range && (skipWhitespace && element.element!!.text[start].isWhitespace())) {
+                start++
+            }
+            return start in range
+        }
+
+        fun isAtEnd(skipWhitespace: Boolean = true): Boolean {
+            val element = pointer!!
+            var start = element.element!!.text.length - 1
+            while (start >= 0 && start !in range && (skipWhitespace && element.element!!.text[start].isWhitespace())) {
+                start--
+            }
+            return start in range
+        }
     }
 
 
@@ -22,7 +44,8 @@ data class Typo(val location: Location, val info: Info, val fixes: List<String> 
         val incorrectExample: IncorrectExample?
             get() {
                 val withCorrections = rule.incorrectExamples.filter { it.corrections.isNotEmpty() }
-                return (withCorrections.takeIf { it.isNotEmpty() } ?: rule.incorrectExamples).minBy { it.example.length }
+                return (withCorrections.takeIf { it.isNotEmpty() }
+                        ?: rule.incorrectExamples).minBy { it.example.length }
             }
     }
 
