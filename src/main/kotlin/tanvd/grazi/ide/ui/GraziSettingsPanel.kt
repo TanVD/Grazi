@@ -14,7 +14,6 @@ import org.languagetool.rules.Category
 import org.languagetool.rules.Rule
 import org.picocontainer.Disposable
 import tanvd.grazi.GraziConfig
-import tanvd.grazi.ide.GraziLifecycle
 import tanvd.grazi.language.Lang
 import tanvd.grazi.utils.*
 import java.awt.*
@@ -133,20 +132,24 @@ class GraziSettingsPanel : ConfigurableUi<GraziConfig>, Disposable {
     }
 
     override fun apply(settings: GraziConfig) {
+        val state = settings.state.copy()
+
         Lang.values().forEach {
             if (cblEnabledLanguages.isItemSelected(it.name)) {
-                settings.state.enabledLanguages.add(it)
+                state.enabledLanguages.add(it)
             } else {
-                settings.state.enabledLanguages.remove(it)
+                state.enabledLanguages.remove(it)
             }
         }
 
-        settings.state.nativeLanguage = cmbNativeLanguage.selectedItem as Lang
-        settings.state.enabledSpellcheck = cbEnableGraziSpellcheck.isSelected
-        rulesTree.apply()
-        GraziLifecycle.publisher.reInit()
+        state.nativeLanguage = cmbNativeLanguage.selectedItem as Lang
+        state.enabledSpellcheck = cbEnableGraziSpellcheck.isSelected
+        with (rulesTree) {
+            apply()
+            reset()
+        }
 
-        rulesTree.reset() // refresh languages
+        GraziConfig.instance.loadState(state)
     }
 
     override fun reset(settings: GraziConfig) {
