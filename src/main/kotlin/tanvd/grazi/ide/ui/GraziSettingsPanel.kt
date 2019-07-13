@@ -47,7 +47,7 @@ class GraziSettingsPanel : ConfigurableUi<GraziConfig>, Disposable {
         isOpaque = true
         border = null
         background = null
-    }.apply {
+
         addHyperlinkListener { event ->
             if (event?.eventType == HyperlinkEvent.EventType.ACTIVATED) {
                 Desktop.getDesktop()?.browse(event?.url?.toURI())
