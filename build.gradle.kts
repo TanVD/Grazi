@@ -77,6 +77,7 @@ val langs = setOf("en", "ru", "fr", "de", "pl", "it", "zh", "ja", "uk", "el", "r
 fun ExternalModuleDependency.excludesForLT() {
     exclude("org.slf4j", "slf4j-api")
     exclude("ml.dlmc", "xgboost4j")
+    exclude("biz.k11i", "xgboost-predictor")
     exclude("com.typesafe.akka")
     exclude("org.scala-lang")
 }
