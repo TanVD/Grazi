@@ -22,7 +22,7 @@ repositories {
 
 intellij {
     pluginName = "Grazi"
-    version = "IC-192.5438-EAP-CANDIDATE-SNAPSHOT"
+    version = "IU-192.5728-EAP-CANDIDATE-SNAPSHOT"
     downloadSources = true
     type = "IU"
 
@@ -32,8 +32,8 @@ intellij {
             "markdown",
             "Kotlin",
             "java",
-            "PythonCore:2019.2.192.5438.14",
-            "org.rust.lang:0.2.99.2127-192",
+            "PythonCore:2019.2.192.5728.74",
+            "org.rust.lang:0.2.101.2129-192",
             "nl.rubensten.texifyidea:0.6.6",
             "CSS",
             "JavaScriptLanguage",
