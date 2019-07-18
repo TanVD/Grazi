@@ -1,26 +1,28 @@
 package tanvd.grazi.ide.ui
 
-import com.intellij.ui.components.JBTabbedPane
+import com.intellij.openapi.ui.panel.ComponentPanelBuilder
+import com.intellij.ui.IdeBorderFactory
 import org.jetbrains.annotations.PropertyKey
 import tanvd.grazi.GraziBundle
-import java.awt.*
-import javax.swing.*
-import javax.swing.border.CompoundBorder
+import java.awt.BorderLayout
+import java.awt.Container
+import java.awt.Insets
+import java.awt.LayoutManager
+import javax.swing.JComponent
+import javax.swing.JPanel
+import javax.swing.border.Border
 
 fun panel(layout: LayoutManager = BorderLayout(0, 0), body: JPanel.() -> Unit) = JPanel(layout).apply(body)
-fun JTabbedPane.panel(layout: LayoutManager = BorderLayout(0, 0), body: JPanel.() -> Unit) = JPanel(layout).apply(body)
 fun Container.panel(layout: LayoutManager = BorderLayout(0, 0), constraint: Any,
                     body: JPanel.() -> Unit): JPanel = JPanel(layout).apply(body).also { add(it, constraint) }
 
-fun tabs(body: JBTabbedPane.() -> Unit) = JBTabbedPane().apply(body)
-fun Container.tabs(body: JBTabbedPane.() -> Unit) = JBTabbedPane().apply(body).also { add(it) }
+fun Container.panel(layout: LayoutManager = BorderLayout(0, 0), body: JPanel.() -> Unit): JPanel = JPanel(layout).apply(body).also { add(it) }
 
-fun JTabbedPane.tab(name: String, body: JTabbedPane.() -> Component) = body().also { addTab(name, it) }
+fun border(text: String, hasIndent: Boolean, insets: Insets, showLine: Boolean = true): Border = IdeBorderFactory.createTitledBorder(text, hasIndent, insets).setShowLine(showLine)
 
-fun label(text: String, configure: JLabel.() -> Unit = {}) = JLabel(text).apply(configure)
-fun Container.label(text: String, configure: JLabel.() -> Unit = {}) = JLabel(text).apply(configure).also { add(it) }
+fun padding(insets: Insets): Border = IdeBorderFactory.createEmptyBorder(insets)
 
-fun border(text: String): CompoundBorder = BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder(text),
-        BorderFactory.createEmptyBorder(3, 5, 5, 5))
+fun wrap(component: JComponent, comment: String) = ComponentPanelBuilder(component).withComment(comment).resizeY(true).createPanel()
+fun wrap(component: JComponent, comment: String, label: String) = ComponentPanelBuilder(component).withComment(comment).withLabel(label).resizeY(true).createPanel()
 
 fun msg(@PropertyKey(resourceBundle = GraziBundle.bundleName) key: String, vararg params: String): String = GraziBundle.message(key, *params)

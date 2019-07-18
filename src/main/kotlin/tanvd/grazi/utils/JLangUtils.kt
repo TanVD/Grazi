@@ -1,5 +1,7 @@
 package tanvd.grazi.utils
 
+import kotlinx.html.FlowOrPhrasingContent
+import kotlinx.html.strong
 import org.languagetool.rules.*
 import tanvd.grazi.grammar.Typo
 
@@ -10,8 +12,37 @@ val Typo.isSpellingTypo: Boolean
 val RuleMatch.typoCategory: Typo.Category
     get() = Typo.Category[rule.category.id.toString()]
 
+val ExampleSentence.text: CharSequence
+    get() = example
+
 fun Rule.toDescriptionSanitized() = this.description.replace("**", "")
 
-fun IncorrectExample.toIncorrectHtml() = this.example.replace("marker", "strong")
-fun IncorrectExample.toCorrectHtml() = this.example.replace(Regex("<marker.*marker>"),
-        if (corrections.isNotEmpty()) "<strong>${corrections.first()}</strong>" else "")
+private fun FlowOrPhrasingContent.toHtml(example: IncorrectExample, mistakeHandler: FlowOrPhrasingContent.(String) -> Unit) {
+    Regex("(.*?)<marker>(.*?)</marker>|(.*)").findAll(example.example).forEach {
+        val (prefix, mistake, suffix) = it.destructured
+
+        +prefix
+        mistakeHandler(mistake)
+        +suffix
+    }
+}
+
+fun FlowOrPhrasingContent.toIncorrectHtml(example: IncorrectExample) {
+    toHtml(example) { mistake ->
+        if (mistake.isNotEmpty()) {
+            strong {
+                +mistake.trim()
+            }
+        }
+    }
+}
+
+fun FlowOrPhrasingContent.toCorrectHtml(example: IncorrectExample) {
+    toHtml(example) { mistake ->
+        if (mistake.isNotEmpty() && example.corrections.isNotEmpty()) {
+            strong {
+                +example.corrections.first().trim()
+            }
+        }
+    }
+}

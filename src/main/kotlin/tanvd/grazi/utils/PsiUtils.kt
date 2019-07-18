@@ -8,7 +8,6 @@ import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.parents
-import org.rust.lang.core.psi.ext.elementType
 
 inline fun <reified T : PsiElement> PsiElement.filterFor(filter: (T) -> Boolean = { true }): List<T> = PsiTreeUtil.collectElementsOfType(this, T::class.java).filter(filter).distinct()
 

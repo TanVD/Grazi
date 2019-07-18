@@ -3,7 +3,6 @@ package tanvd.grazi.ide.language
 import org.junit.Test
 import tanvd.grazi.GraziConfig
 import tanvd.grazi.GraziTestBase
-import tanvd.grazi.ide.msg.GraziAppLifecycle
 import tanvd.grazi.language.Lang
 
 
@@ -11,14 +10,12 @@ class MultiLanguageTextSupportTest : GraziTestBase(true) {
 
     override fun setUp() {
         super.setUp()
-        GraziConfig.state.enabledLanguages.add(Lang.RUSSIAN)
-        GraziAppLifecycle.publisher.reInit()
+        GraziConfig.update { it.copy(enabledLanguages = it.enabledLanguages + Lang.RUSSIAN) }
     }
 
     override fun tearDown() {
         super.tearDown()
-        GraziConfig.state.enabledLanguages.remove(Lang.RUSSIAN)
-        GraziAppLifecycle.publisher.reInit()
+        GraziConfig.update { it.copy(enabledLanguages = it.enabledLanguages - Lang.RUSSIAN) }
     }
 
     @Test
