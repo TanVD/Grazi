@@ -1,9 +1,7 @@
 package tanvd.grazi.ide.language.rust
 
-import com.intellij.lang.Language
 import com.intellij.psi.PsiElement
 import org.rust.ide.injected.findDoctestInjectableRanges
-import org.rust.lang.RsLanguage
 import org.rust.lang.core.psi.RsDocCommentImpl
 import tanvd.grazi.grammar.GrammarChecker
 import tanvd.grazi.grammar.Typo
@@ -13,20 +11,14 @@ import tanvd.kex.ifTrue
 class RsDocSupport : LanguageSupport() {
     companion object {
         //TODO-tanvd@undin Poor solution, but for better need support of Rust team
-        val checker = GrammarChecker(GrammarChecker.ignoringQuotes,
+        private val checker = GrammarChecker(GrammarChecker.ignoringQuotes,
                 ignoreChar = linkedSetOf({ _, cur -> cur == '/' }, { _, cur -> cur == '\"' }),
                 replaceChar = linkedSetOf({ prev, cur ->
                     (cur == '#' && !prev.endsWith('#')).ifTrue { '\n' }
                 }))
     }
 
-    override fun isSupported(language: Language): Boolean {
-        return language is RsLanguage
-    }
-
-    override fun isRelevant(element: PsiElement): Boolean {
-        return element is RsDocCommentImpl
-    }
+    override fun isRelevant(element: PsiElement) = element is RsDocCommentImpl
 
     override fun check(element: PsiElement): Set<Typo> {
         require(element is RsDocCommentImpl) { "Got not RsDocCommentImpl in a RsDocSupport" }

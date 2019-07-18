@@ -5,6 +5,7 @@ import org.languagetool.Language
 import org.languagetool.language.*
 import tanvd.grazi.GraziBundle
 
+@Suppress("unused")
 enum class Lang(val jLanguage: Language,
                 private val enabledRules: Set<String> = emptySet(),
                 private val disabledRules: Set<String> = emptySet()) {
@@ -39,6 +40,8 @@ enum class Lang(val jLanguage: Language,
     val shortCode = jLanguage.shortCode!!
 
     val displayName = jLanguage.name!!
+
+    fun isEnglish() = this.shortCode == "en"
 
     override fun toString() = displayName
 

@@ -1,7 +1,5 @@
 package tanvd.grazi.ide.language.xml
 
-import com.intellij.lang.Language
-import com.intellij.lang.xml.XMLLanguage
 import com.intellij.psi.PsiElement
 import com.intellij.psi.xml.XmlFile
 import com.intellij.psi.xml.XmlText
@@ -10,14 +8,9 @@ import tanvd.grazi.grammar.Typo
 import tanvd.grazi.ide.language.LanguageSupport
 import tanvd.grazi.utils.filterFor
 
+//TODO-fatall rework using XmlText (similar to latex)
 class XmlSupport : LanguageSupport() {
-    override fun isSupported(language: Language): Boolean {
-        return language is XMLLanguage
-    }
-
-    override fun isRelevant(element: PsiElement): Boolean {
-        return element is XmlFile
-    }
+    override fun isRelevant(element: PsiElement) = element is XmlFile
 
     override fun check(element: PsiElement): Set<Typo> {
         val xmlTexts = element.filterFor<XmlText>()

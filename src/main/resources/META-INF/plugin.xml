@@ -4,40 +4,31 @@
     <vendor email="vladislav.tankov@jetbrains.com" url="https://jetbrains.com">JetBrains</vendor>
 
     <description><![CDATA[
-        Grazi is a proofreader and grammar checker covering over 15 languages,
-        including English, German, Russian, Chinese, and others. It improves the
-        quality of texts written using IntelliJ Platform IDEs by providing
-        intelligent spelling and grammar checking.
+    <strong>Grazi</strong>
 
-        <br/>
+    <p>Provides intelligent spelling and grammar checks for text that you write in the IDE.</p>
 
-        The plugin supports natural language constructs wherever they are: Kotlin,
-        Python, and Java (including literals and docs), comments, Markdown, XML,
-        commit messages and plain text.
+    <ul>
+        <li>Supports over 15 languages, including English, German, Russian, Chinese, and others.</li>
+        <li>Recognizes natural language constructs in programming languages (Kotlin, Python, Java and others),
+            markup languages (Latex, Markdown, XML, HTML), comments, commits messages, and more.</li>
+        <li>Uses LanguageTool as its proofreading engine.</li>
+    </ul>
 
-        <br/>
+    <p>English is enabled by default when you install the plugin. To enable other languages, open Settings/Preferences
+       and select <strong>Tools</strong> > <strong>Grazi</strong>.</p>
 
-        Under the hood, it uses LanguageTool to provide you with the unrivaled
-        performance and accuracy of the leading proofreading and grammar checking engine.
-
-        <br/>
-
-        Note, that all verification is performed locally, inside your IDE. The plugin does not
-        send any of your data anywhere.
-
-        <br/>
-
-        To enable spellchecking or support for other languages (by default English is enabled),
-        use the Grazi settings located at Settings/Preferences -> Tools -> Grazi
+    <p><strong>NOTE:</strong> All verification is performed locally, inside your IDE. The plugin does not send any of
+       your data anywhere.</p>
     ]]></description>
 
     <change-notes><![CDATA[
     <h4>2019.2-3</h4>
     <ul>
-         <li>Huge performance improvements for all languages</li>
-         <li>Grazi spellcheck is enabled by default</li>
-         <li>Reworked inspection tooltips</li>
-         <li>Support of Rust, JSON, JavaScript</li>
+        <li>Huge performance improvements for all languages</li>
+        <li>Fully reworked UI</li>
+        <li>Configurations of enabled rules in UI</li>
+        <li>Support of Rust, JSON, JavaScript, Latex, Properties</li>
     </ul>
     <h4>2019.2-2</h4>
     <ul>
@@ -64,18 +55,22 @@
     ]]>
     </change-notes>
 
-    <depends optional="true" config-file="markdown.xml">org.intellij.plugins.markdown</depends>
-    <depends optional="true" config-file="kotlin.xml">org.jetbrains.kotlin</depends>
-    <depends optional="true" config-file="python.xml">com.intellij.modules.python</depends>
     <depends optional="true" config-file="java.xml">com.intellij.modules.java</depends>
     <depends optional="true" config-file="javascript.xml">JavaScript</depends>
+    <depends optional="true" config-file="json.xml">com.intellij.modules.json</depends>
+    <depends optional="true" config-file="kotlin.xml">org.jetbrains.kotlin</depends>
+    <depends optional="true" config-file="markdown.xml">org.intellij.plugins.markdown</depends>
+    <depends optional="true" config-file="properties.xml">com.intellij.properties</depends>
+    <depends optional="true" config-file="python.xml">com.intellij.modules.python</depends>
     <depends optional="true" config-file="rust.xml">org.rust.lang</depends>
+    <depends optional="true" config-file="latex.xml">nl.rubensten.texifyidea</depends>
+    <depends optional="true" config-file="xml.xml">com.intellij.modules.xml</depends>
 
-    <idea-version since-build="192"/>
+    <idea-version since-build="192.3645"/>
 
     <application-components>
         <component>
-            <implementation-class>tanvd.grazi.GraziPlugin</implementation-class>
+            <implementation-class>tanvd.grazi.ide.init.GraziAppInit</implementation-class>
         </component>
     </application-components>
 
@@ -95,19 +90,19 @@
                                  key="grazi.name" bundle="messages.GraziBundle"/>
 
         <nameSuggestionProvider id="SpellCheckerSuggestions" implementation="tanvd.grazi.spellcheck.SpellCheckRenameSuggestions" order="first"/>
+
+        <search.optionContributor implementation="tanvd.grazi.ide.ui.GraziSearchableOptionContributor"/>
+
     </extensions>
 
     <extensionPoints>
-        <extensionPoint qualifiedName="tanvd.grazi.languageSupport" interface="tanvd.grazi.ide.language.LanguageSupport"/>
+        <extensionPoint name="languageSupport" beanClass="com.intellij.lang.LanguageExtensionPoint">
+            <with attribute="implementationClass" implements="tanvd.grazi.ide.language.LanguageSupport"/>
+        </extensionPoint>
     </extensionPoints>
 
     <extensions defaultExtensionNs="tanvd.grazi">
-        <languageSupport implementation="tanvd.grazi.ide.language.plain.PlainTextSupport"/>
-
-        <languageSupport implementation="tanvd.grazi.ide.language.xml.XmlSupport"/>
-
-        <languageSupport implementation="tanvd.grazi.ide.language.json.JsonSupport"/>
-
-        <languageSupport implementation="tanvd.grazi.ide.language.comment.CommentsSupport"/>
+        <languageSupport language="TEXT" implementationClass="tanvd.grazi.ide.language.plain.PlainTextSupport"/>
+        <languageSupport language="" implementationClass="tanvd.grazi.ide.language.comment.CommentsSupport"/>
     </extensions>
 </idea-plugin>

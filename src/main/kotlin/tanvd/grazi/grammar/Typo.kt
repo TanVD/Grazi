@@ -4,9 +4,14 @@ import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.lang.annotation.ProblemGroup
 import com.intellij.psi.PsiElement
 import com.intellij.psi.SmartPsiElementPointer
-import org.languagetool.rules.*
+import org.languagetool.rules.IncorrectExample
+import org.languagetool.rules.Rule
+import org.languagetool.rules.RuleMatch
 import tanvd.grazi.language.Lang
-import tanvd.grazi.utils.*
+import tanvd.grazi.language.LangToolFixes
+import tanvd.grazi.utils.toIntRange
+import tanvd.grazi.utils.typoCategory
+import tanvd.grazi.utils.withOffset
 
 data class Typo(val location: Location, val info: Info, val fixes: List<String> = emptyList()) {
     data class Location(val range: IntRange, val pointer: SmartPsiElementPointer<PsiElement>? = null,
@@ -15,8 +20,25 @@ data class Typo(val location: Location, val info: Info, val fixes: List<String> 
             get() = pointer?.element
 
         fun withOffset(offset: Int) = copy(range = IntRange(range.start + offset, range.endInclusive + offset))
-    }
 
+        fun isAtStart(skipWhitespace: Boolean = true): Boolean {
+            var start = 0
+            val element = pointer!!
+            while (start < element.element!!.text.length && start !in range && (skipWhitespace && element.element!!.text[start].isWhitespace())) {
+                start++
+            }
+            return start in range
+        }
+
+        fun isAtEnd(skipWhitespace: Boolean = true): Boolean {
+            val element = pointer!!
+            var start = element.element!!.text.length - 1
+            while (start >= 0 && start !in range && (skipWhitespace && element.element!!.text[start].isWhitespace())) {
+                start--
+            }
+            return start in range
+        }
+    }
 
     data class Info(val lang: Lang, val rule: Rule, val match: RuleMatch, val category: Category) {
         val incorrectExample: IncorrectExample?
@@ -28,10 +50,12 @@ data class Typo(val location: Location, val info: Info, val fixes: List<String> 
 
     val word by lazy { location.pointer?.element!!.text.subSequence(location.range).toString() }
 
+    /** Constructor for LangTool, applies fixes to RuleMatch (Main constructor doesn't apply fixes) */
     constructor(match: RuleMatch, lang: Lang, offset: Int = 0) : this(
             Location(match.toIntRange().withOffset(offset)),
-            Info(lang, match.rule, match, match.typoCategory), match.suggestedReplacements)
-
+            Info(lang, match.rule, match, match.typoCategory),
+            match.suggestedReplacements.map { LangToolFixes.fixSuggestion(match.rule, it) }
+    )
 
     enum class Category(val value: String, val description: String) : ProblemGroup {
         /** Rules about detecting uppercase words where lowercase is required and vice versa.  */

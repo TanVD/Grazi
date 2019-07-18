@@ -5,14 +5,14 @@ import tanvd.grazi.Versions
 import tanvd.grazi.channel
 
 group = "tanvd.grazi"
-version = "2019.2-3.4.$channel"
+version = "2019.2-3.5.$channel"
 
 
 plugins {
-    id("tanvd.kosogor") version "1.0.6" apply true
+    id("tanvd.kosogor") version "1.0.7" apply true
     id("io.gitlab.arturbosch.detekt") version ("1.0.0-RC14") apply true
     id("org.jetbrains.intellij") version "0.4.9" apply true
-    kotlin("jvm") version "1.3.40" apply true
+    kotlin("jvm") version "1.3.41" apply true
 }
 
 repositories {
@@ -30,12 +30,14 @@ intellij {
 
     setPlugins(
             "markdown",
+            "Kotlin",
+            "java",
             "PythonCore:2019.2.192.5438.14",
             "org.rust.lang:0.2.99.2127-192",
+            "nl.rubensten.texifyidea:0.6.6",
             "CSS",
             "JavaScriptLanguage",
-            "Kotlin",
-            "java"
+            "properties"
     )
 }
 
@@ -84,6 +86,8 @@ dependencies {
             exclude("org.slf4j", "slf4j-api")
         }
     }
+
+    compile("org.jetbrains.kotlinx", "kotlinx-html-jvm", "0.6.11")
 
     compile("org.apache.commons", "commons-lang3", "3.5")
 
