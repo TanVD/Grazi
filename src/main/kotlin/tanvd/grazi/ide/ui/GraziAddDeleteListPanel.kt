@@ -2,10 +2,8 @@ package tanvd.grazi.ide.ui
 
 import com.intellij.openapi.actionSystem.ActionToolbarPosition
 import com.intellij.openapi.ui.JBPopupMenu
-import com.intellij.ui.AddDeleteListPanel
-import com.intellij.ui.CommonActionsPanel
-import com.intellij.ui.ListUtil
-import com.intellij.ui.ToolbarDecorator
+import com.intellij.ui.*
+import com.intellij.util.ui.EditableModel
 import com.intellij.util.ui.JBUI
 import tanvd.grazi.GraziConfig
 import tanvd.grazi.language.Lang
@@ -14,24 +12,16 @@ import java.awt.Component
 import java.awt.event.ActionEvent
 import javax.swing.*
 
-interface GraziLanguagePanelUpdateListener {
-    fun onLanguageAdded(lang: Lang)
-    fun onLanguageRemoved(lang: Lang)
-}
-
-class GraziAddDeleteListPanel(private val updateListener: GraziLanguagePanelUpdateListener) :
+class GraziAddDeleteListPanel(private val onLanguageAdded: (lang: Lang) -> Unit, private val onLanguageRemoved: (lang: Lang) -> Unit) :
         AddDeleteListPanel<Lang>(null, GraziConfig.get().enabledLanguages.sortedWith(Comparator.comparing(Lang::displayName))) {
     private val decorator: ToolbarDecorator =
-        GraziListToolbarDecorator(myList as JList<Any>)
-                .setAddAction { addElement(findItemToAdd()) }
-                .setToolbarPosition(ActionToolbarPosition.BOTTOM)
-                .setRemoveAction {
-                    myList.selectedValuesList.forEach {
-                        updateListener.onLanguageRemoved(it)
+            GraziListToolbarDecorator(myList as JList<Any>)
+                    .setAddAction { addElement(findItemToAdd()) }
+                    .setToolbarPosition(ActionToolbarPosition.BOTTOM)
+                    .setRemoveAction {
+                        myList.selectedValuesList.forEach(onLanguageRemoved)
+                        ListUtil.removeSelectedItems<Lang>(myList as JList<Lang>)
                     }
-
-                    ListUtil.removeSelectedItems<Lang>(myList as JList<Lang>)
-                }
 
     init {
         emptyText.text = msg("grazi.ui.settings.language.empty.text")
@@ -55,7 +45,7 @@ class GraziAddDeleteListPanel(private val updateListener: GraziLanguagePanelUpda
         if (itemToAdd != null) {
             val position = -(myListModel.elements().toList().binarySearch(itemToAdd, Comparator.comparing(Lang::displayName)) + 1)
             myListModel.add(position, itemToAdd)
-            updateListener.onLanguageAdded(itemToAdd)
+            onLanguageAdded(itemToAdd)
             myList.clearSelection()
             myList.setSelectedValue(itemToAdd, true)
         }
@@ -83,12 +73,34 @@ class GraziAddDeleteListPanel(private val updateListener: GraziLanguagePanelUpda
 
     fun reset(settings: GraziConfig) {
         val model = myList.model as DefaultListModel<Lang>
-        model.elements().asSequence().forEach {
-            updateListener.onLanguageRemoved(it)
-        }
+        model.elements().asSequence().forEach(onLanguageRemoved)
         model.clear()
-        settings.state.enabledLanguages.sortedWith(Comparator.comparing(Lang::displayName)).forEach {
-            addElement(it)
+        settings.state.enabledLanguages.sortedWith(Comparator.comparing(Lang::displayName)).forEach(::addElement)
+    }
+
+    private class GraziListToolbarDecorator(val list: JList<Any>) : ToolbarDecorator() {
+        init {
+            myRemoveActionEnabled = true
+            myAddActionEnabled = true
+
+            list.addListSelectionListener { updateButtons() }
+            list.addPropertyChangeListener("enabled") { updateButtons() }
         }
+
+        public override fun updateButtons() {
+            actionsPanel?.let {
+                it.setEnabled(CommonActionsPanel.Buttons.ADD, list.isEnabled && list.model.size < Lang.values().size)
+                it.setEnabled(CommonActionsPanel.Buttons.REMOVE, !list.isSelectionEmpty)
+                updateExtraElementActions(!list.isSelectionEmpty)
+            }
+        }
+
+        override fun setVisibleRowCount(rowCount: Int) = this.also { list.visibleRowCount = rowCount }
+
+        override fun getComponent() = list
+
+        override fun installDnDSupport() = RowsDnDSupport.install(list, list.model as EditableModel)
+
+        override fun isModelEditable() = true
     }
 }
