@@ -13,10 +13,12 @@ import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import com.intellij.util.ui.tree.TreeUtil
 import org.picocontainer.Disposable
+import tanvd.grazi.GraziConfig
 import tanvd.grazi.ide.ui.panel
 import tanvd.grazi.language.Lang
 import tanvd.grazi.language.LangTool
 import java.awt.BorderLayout
+import java.awt.Component
 import java.util.*
 import javax.swing.JTree
 import javax.swing.tree.DefaultMutableTreeNode
@@ -24,6 +26,16 @@ import javax.swing.tree.DefaultTreeModel
 
 class GraziRulesTree(selectionListener: (meta: Any) -> Unit) : Disposable {
     private val state = HashMap<String, RuleWithLang>()
+    private val langs = HashSet<Lang>(GraziConfig.get().enabledLanguages)
+
+    fun addLang(lang: Lang) {
+        langs.add(lang)
+        update()
+    }
+    fun removeLang(lang: Lang) {
+        langs.remove(lang)
+        update()
+    }
 
     private class GraziTreeNode(userObject: Any? = null) : CheckedTreeNode(userObject) {
         override fun equals(other: Any?): Boolean {
@@ -77,9 +89,7 @@ class GraziRulesTree(selectionListener: (meta: Any) -> Unit) : Disposable {
         object : FilterComponent("GRAZI_RULES_FILTER", 10) {
 
             override fun filter() {
-                if (!filter.isNullOrBlank()){
-                    expansionMonitor.freeze()
-                }
+                expansionMonitor.freeze()
 
                 filterTree(filter)
                 (tree.model as DefaultTreeModel).reload()
@@ -109,7 +119,7 @@ class GraziRulesTree(selectionListener: (meta: Any) -> Unit) : Disposable {
                     add(ActionManager.getInstance().createActionToolbar("GraziRulesTree", this, true).component, BorderLayout.WEST)
                 }
 
-                add(_filter, BorderLayout.CENTER)
+                add(_filter as Component, BorderLayout.CENTER)
             }
 
             panel(constraint = BorderLayout.CENTER) {
@@ -125,7 +135,7 @@ class GraziRulesTree(selectionListener: (meta: Any) -> Unit) : Disposable {
         }
 
     val isModified: Boolean
-        get() = state.isNotEmpty()
+        get() = state.values.any { it.lang in langs }
 
     init {
         _filter?.reset()
@@ -134,14 +144,14 @@ class GraziRulesTree(selectionListener: (meta: Any) -> Unit) : Disposable {
     data class TreeState(val enabled: Set<String>, val disabled: Set<String>)
 
     fun state(): TreeState {
-        val (enabled, disabled) = state.values.partition { it.enabledInTree }
+        val (enabled, disabled) = state.values.filter { it.lang in langs }.partition { it.enabledInTree }
         return TreeState(enabled.map { it.rule.id }.toSet(), disabled.map { it.rule.id }.toSet())
     }
 
     /** Will filter tree representation in UI */
     fun filterTree(filterString: String?) {
         if (!filterString.isNullOrBlank()) {
-            reset(LangTool.allRulesWithLangs().asSequence().map { (lang, categories) ->
+            reset(LangTool.allRulesWithLangs(langs).asSequence().map { (lang, categories) ->
                 if (lang.displayName.contains(filterString, true)) lang to categories
                 else lang to categories.map { (category, rules) ->
                     if (category.name.contains(filterString, true)) category to rules
@@ -149,7 +159,7 @@ class GraziRulesTree(selectionListener: (meta: Any) -> Unit) : Disposable {
                 }.toMap().filterValues { it.isNotEmpty() }
             }.toMap().filterValues { it.isNotEmpty() })
         } else {
-            reset(LangTool.allRulesWithLangs())
+            reset(LangTool.allRulesWithLangs(langs))
         }
     }
 
@@ -157,9 +167,14 @@ class GraziRulesTree(selectionListener: (meta: Any) -> Unit) : Disposable {
         tree.setSelectionRow(0)
     }
 
+    fun update() {
+        _filter?.filter()
+        if (tree.isSelectionEmpty) resetSelection()
+    }
+
     fun reset() {
         state.clear()
-        _filter?.filter()
+        update()
     }
 
     private fun reset(rules: RulesMap) {
