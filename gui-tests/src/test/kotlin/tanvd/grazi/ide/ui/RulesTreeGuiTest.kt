@@ -5,6 +5,7 @@ import com.intellij.testGuiFramework.impl.*
 import com.intellij.testGuiFramework.launcher.ide.CommunityIde
 import org.fest.swing.timing.Timeout
 import org.junit.Test
+import tanvd.grazi.GraziGuiTestCase
 import javax.swing.JPanel
 
 

@@ -5,6 +5,7 @@ import com.intellij.testGuiFramework.framework.RunWithIde
 import com.intellij.testGuiFramework.impl.*
 import com.intellij.testGuiFramework.launcher.ide.CommunityIde
 import org.junit.Test
+import tanvd.grazi.GraziGuiTestCase
 
 
 @RunWithIde(CommunityIde::class)
