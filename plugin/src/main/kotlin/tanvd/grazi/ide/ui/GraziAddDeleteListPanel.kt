@@ -1,7 +1,9 @@
 package tanvd.grazi.ide.ui
 
 import com.intellij.openapi.actionSystem.ActionToolbarPosition
-import com.intellij.openapi.ui.JBPopupMenu
+import com.intellij.openapi.ui.popup.JBPopupFactory
+import com.intellij.openapi.ui.popup.PopupStep
+import com.intellij.openapi.ui.popup.util.BaseListPopupStep
 import com.intellij.ui.*
 import com.intellij.util.ui.EditableModel
 import com.intellij.util.ui.JBUI
@@ -9,7 +11,6 @@ import tanvd.grazi.GraziConfig
 import tanvd.grazi.language.Lang
 import java.awt.BorderLayout
 import java.awt.Component
-import java.awt.event.ActionEvent
 import javax.swing.*
 
 class GraziAddDeleteListPanel(private val onLanguageAdded: (lang: Lang) -> Unit, private val onLanguageRemoved: (lang: Lang) -> Unit) :
@@ -51,23 +52,17 @@ class GraziAddDeleteListPanel(private val onLanguageAdded: (lang: Lang) -> Unit,
         }
     }
 
+
     override fun findItemToAdd(): Lang? {
-        val menu = JBPopupMenu(msg("grazi.ui.settings.language.dialog.title"))
         val langsInList = listItems.toSet()
-        Lang.sortedValues.filter { it !in langsInList }.forEach {
-            menu.add(object : AbstractAction(it.displayName) {
-                override fun actionPerformed(event: ActionEvent?) {
-                    addElement(it)
-                }
-            })
-        }
+        val menu = JBPopupFactory.getInstance()
+                .createListPopup(object : BaseListPopupStep<Lang>(msg("grazi.ui.settings.language.dialog.title"), Lang.sortedValues.filter { it !in langsInList }) {
+                    override fun onChosen(selectedValue: Lang?, finalChoice: Boolean): PopupStep<*>? {
+                        return doFinalStep { addElement(selectedValue) }
+                    }
+                })
 
-        decorator.actionsPanel?.getAnActionButton(CommonActionsPanel.Buttons.ADD)?.preferredPopupPoint?.let {
-            menu.show(it.component, it.point.x, it.point.y)
-        } ?: run {
-            menu.show(this, width - insets.right, insets.top)
-        }
-
+        decorator.actionsPanel?.getAnActionButton(CommonActionsPanel.Buttons.ADD)?.preferredPopupPoint?.let(menu::show)
         return null
     }
 
