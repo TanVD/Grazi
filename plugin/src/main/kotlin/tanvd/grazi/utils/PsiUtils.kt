@@ -7,7 +7,6 @@ import com.intellij.psi.impl.source.tree.TreeUtil
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.psi.util.parents
 
 inline fun <reified T : PsiElement> PsiElement.filterFor(filter: (T) -> Boolean = { true }): List<T> = PsiTreeUtil.collectElementsOfType(this, T::class.java).filter(filter).distinct()
 
@@ -25,6 +24,8 @@ inline fun <reified T : PsiElement> PsiElement.filterForTokens(vararg tokens: IE
 }
 
 inline fun <reified T : PsiElement> T.toPointer(): SmartPsiElementPointer<T> = SmartPointerManager.createPointer(this)
+
+fun PsiElement.parents(): Sequence<PsiElement> = generateSequence(this) { it.parent }
 
 fun PsiElement.isInjectedFragment(): Boolean {
     val host = this.parents().filter { it is PsiLanguageInjectionHost }.firstOrNull() as? PsiLanguageInjectionHost ?: return false
