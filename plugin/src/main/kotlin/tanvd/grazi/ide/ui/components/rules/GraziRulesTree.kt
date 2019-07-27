@@ -1,4 +1,4 @@
-package tanvd.grazi.ide.ui.rules
+package tanvd.grazi.ide.ui.components.rules
 
 import com.intellij.ide.CommonActionsManager
 import com.intellij.ide.DefaultTreeExpander
@@ -14,7 +14,7 @@ import com.intellij.util.ui.UIUtil
 import com.intellij.util.ui.tree.TreeUtil
 import org.picocontainer.Disposable
 import tanvd.grazi.GraziConfig
-import tanvd.grazi.ide.ui.panel
+import tanvd.grazi.ide.ui.components.dsl.panel
 import tanvd.grazi.language.Lang
 import tanvd.grazi.language.LangTool
 import java.awt.BorderLayout
@@ -32,6 +32,7 @@ class GraziRulesTree(selectionListener: (meta: Any) -> Unit) : Disposable {
         langs.add(lang)
         update()
     }
+
     fun removeLang(lang: Lang) {
         langs.remove(lang)
         update()
