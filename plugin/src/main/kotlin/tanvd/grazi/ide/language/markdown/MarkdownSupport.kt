@@ -2,73 +2,51 @@ package tanvd.grazi.ide.language.markdown
 
 
 import com.intellij.psi.PsiElement
-import org.intellij.plugins.markdown.lang.MarkdownElementTypes
-import org.intellij.plugins.markdown.lang.MarkdownTokenTypes
-import tanvd.grazi.grammar.*
+import com.intellij.psi.util.PsiTreeUtil
+import tanvd.grazi.grammar.GrammarChecker
+import tanvd.grazi.grammar.Typo
 import tanvd.grazi.ide.language.LanguageSupport
-import tanvd.grazi.utils.spellcheckOnly
-import tanvd.grazi.utils.traverse
+import tanvd.grazi.utils.parents
 
 class MarkdownSupport : LanguageSupport() {
     companion object {
         private val bulletsIgnoredCategories = listOf(Typo.Category.CASING)
     }
 
-    override fun isRelevant(element: PsiElement): Boolean {
-        return MarkdownPsiUtils.isHeader(element) || MarkdownPsiUtils.isParagraph(element)
-                || MarkdownPsiUtils.isCode(element) || MarkdownPsiUtils.isOuterListItem(element)
-    }
+    override fun isRelevant(element: PsiElement) = MarkdownPsiUtils.isHeader(element) || MarkdownPsiUtils.isParagraph(element) || MarkdownPsiUtils.isCode(element)
 
     override fun check(element: PsiElement): Set<Typo> {
-        return when {
-            MarkdownPsiUtils.isHeader(element) -> {
-                val ignoreFilter = TokensFilter()
-                val elements = element.filterForTextTokensExcluding(*MarkdownPsiUtils.inlineTypes.toTypedArray())
+        return GrammarChecker.default.check(listOf(element), indexBasedIgnore = { token, index ->
+            val elementInToken = token.findElementAt(index)!!
+            !MarkdownPsiUtils.isText(elementInToken) || elementInToken.parents().any { MarkdownPsiUtils.isInline(it) }
+        }).filter { typo ->
+            val startElement = element.findElementAt(typo.location.range.start)!!
+            val endElement = element.findElementAt(typo.location.range.last)!!
 
-                ignoreFilter.populateMd(elements)
+            // Inline elements inside typo
+            if (generateSequence(startElement) { PsiTreeUtil.nextLeaf(it) }.takeWhile { it != endElement }
+                            .any { it.parents().any { MarkdownPsiUtils.isInline(it) } }) return@filter false
 
-                ignoreFilter.filter(GrammarChecker.default.check(elements))
 
+            // Inline element right before a typo (TODO add categories filter)
+            if (typo.location.isAtStartOfInnerElement(startElement)) {
+                generateSequence(PsiTreeUtil.prevLeaf(startElement)) { PsiTreeUtil.prevLeaf(it) }
+                        .find { !MarkdownPsiUtils.isWhitespace(it) && !MarkdownPsiUtils.isEOL(it) }
+                        ?.parents()?.any { MarkdownPsiUtils.isInline(it) }
+                        ?.let { if (it) return@filter false }
             }
-            MarkdownPsiUtils.isCode(element) -> {
-                val elements = element.filterForTokens<PsiElement>(MarkdownTokenTypes.TEXT)
 
-                GrammarChecker.default.check(elements).spellcheckOnly()
+            // Inline element right after a typo (TODO add categories filter)
+            if (typo.location.isAtEndOfInnerElement(endElement)) {
+                generateSequence(PsiTreeUtil.nextLeaf(endElement)) { PsiTreeUtil.nextLeaf(it) }
+                        .find { !MarkdownPsiUtils.isWhitespace(it) && !MarkdownPsiUtils.isEOL(it) }
+                        ?.parents()?.any { MarkdownPsiUtils.isInline(it) }
+                        ?.let { if (it) return@filter false }
             }
-            MarkdownPsiUtils.isOuterListItem(element) -> {
-                val ignoreFilter = TokensFilter()
-                val elements = element.filterForTextTokensExcluding(*MarkdownPsiUtils.inlineTypes.toTypedArray())
 
-                ignoreFilter.populateMd(elements)
-
-                ignoreFilter.filter(GrammarChecker.default.check(elements).filter {
-                    it.info.category !in bulletsIgnoredCategories
-                })
-            }
-            MarkdownPsiUtils.isParagraph(element) -> {
-                val ignoreFilter = TokensFilter()
-                val elements = element.filterForTextTokensExcluding(*MarkdownPsiUtils.inlineTypes.toTypedArray(), MarkdownElementTypes.LIST_ITEM)
-
-                ignoreFilter.populateMd(elements)
-
-                ignoreFilter.filter(GrammarChecker.default.check(elements))
-            }
-            else -> {
-                emptySet()
-            }
-        }
+            !(typo.isTypoInOuterListItem() && typo.info.category in bulletsIgnoredCategories)
+        }.toSet()
     }
 
-    private fun TokensFilter.populateMd(elements: Collection<PsiElement>) {
-        populate(elements, addAsLeftIf = {
-            val nextElement = it.traverse(take = { it.nextSibling ?: it.parent.firstChild },
-                    cond = { MarkdownPsiUtils.isWhitespace(it) || MarkdownPsiUtils.isEOL(it) })
-            nextElement != null && MarkdownPsiUtils.isInline(nextElement)
-        }, addAsRightIf = {
-            val nextElement = it.traverse(take = { it.prevSibling ?: it.parent.lastChild },
-                    cond = { MarkdownPsiUtils.isWhitespace(it) || MarkdownPsiUtils.isEOL(it) })
-            nextElement != null && MarkdownPsiUtils.isInline(nextElement)
-        })
-    }
-
+    private fun Typo.isTypoInOuterListItem() = this.location.element?.parents()?.any { element -> MarkdownPsiUtils.isOuterListItem(element) } ?: false
 }

@@ -5,19 +5,12 @@ intellij {
     pluginName = "Grazi"
     version = "2019.1.3"
     downloadSources = true
-    type = "IU"
+    type = "IC"
 
     updateSinceUntilBuild = false
 
     setPlugins(
-            "markdown",
             "Kotlin",
-            "PythonCore:2019.1.191.6183.53",
-            "org.rust.lang:0.2.98.2125-191",
-            "nl.rubensten.texifyidea:0.6.6",
-            "CSS",
-            "JavaScriptLanguage",
-            "properties",
             "com.intellij.testGuiFramework:0.9.44.1@nightly"
     )
 
@@ -25,7 +18,7 @@ intellij {
 }
 
 tasks.withType<RunIdeTask> {
-    jvmArgs("-Xmx1g")
+    jvmArgs("-Xmx2g")
 
     systemProperties(jbProperties<String>())
 
@@ -34,7 +27,7 @@ tasks.withType<RunIdeTask> {
 
 
 val testsJar = tasks.create("guiTestJar", Jar::class) {
-    group = "gui"
+    group = "build"
     classifier = "tests"
 
     from(_sourceSets["test"].output)

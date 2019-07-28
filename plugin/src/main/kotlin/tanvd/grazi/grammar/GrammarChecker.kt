@@ -9,15 +9,17 @@ class GrammarChecker(private val ignoreChar: LinkedSet<(CharSequence, Char) -> B
                      private val replaceChar: LinkedSet<(CharSequence, Char) -> Char?> = LinkedSet(),
                      private val ignoreToken: LinkedSet<(String) -> Boolean> = LinkedSet()) {
 
-    constructor(checker: GrammarChecker, ignoreChar: LinkedSet<(CharSequence, Char) -> Boolean> = LinkedSet(),
+    constructor(checker: GrammarChecker,
+                ignoreChar: LinkedSet<(CharSequence, Char) -> Boolean> = LinkedSet(),
                 replaceChar: LinkedSet<(CharSequence, Char) -> Char?> = LinkedSet(),
                 ignoreToken: LinkedSet<(String) -> Boolean> = LinkedSet())
-            : this(LinkedSet(checker.ignoreChar + ignoreChar), LinkedSet(checker.replaceChar + replaceChar), LinkedSet(checker.ignoreToken + ignoreToken))
+            : this(LinkedSet(checker.ignoreChar + ignoreChar), LinkedSet(checker.replaceChar + replaceChar),
+            LinkedSet(checker.ignoreToken + ignoreToken))
 
     companion object {
         object Rules {
-            val deduplicateBlanks: (CharSequence, Char) -> Boolean = { str, cur ->
-                str.lastOrNull()?.isWhitespace().orTrue() && cur.isWhitespace()
+            val deduplicateBlanks: (CharSequence, Char) -> Boolean = { prefix, cur ->
+                prefix.lastOrNull()?.isWhitespace().orTrue() && cur.isWhitespace()
             }
             //TODO probably we need to flat them only if previous char is not end of sentence punctuation mark
             val flatNewlines: (CharSequence, Char) -> Char? = { _, cur ->
@@ -25,7 +27,7 @@ class GrammarChecker(private val ignoreChar: LinkedSet<(CharSequence, Char) -> B
             }
 
             val ignoreQuotesAtBorders: (CharSequence, Char) -> Boolean = { prev, cur ->
-                (cur == '\'' || cur == '\"') && (prev.isEmpty() || prev.last() == cur)
+                (cur == '\'' || cur == '\"') && (prev.isNotEmpty() && prev.last() == cur)
             }
         }
 
@@ -33,7 +35,8 @@ class GrammarChecker(private val ignoreChar: LinkedSet<(CharSequence, Char) -> B
         val ignoringQuotes = GrammarChecker(default, ignoreChar = linkedSetOf(Rules.ignoreQuotesAtBorders))
     }
 
-    fun <T : PsiElement> check(vararg tokens: T, getText: (T) -> String = { it.text }) = check(tokens.toList(), getText)
+    fun <T : PsiElement> check(vararg tokens: T, getText: (T) -> String = { it.text },
+                               indexBasedIgnore: (T, Int) -> Boolean = { _, _ -> false }) = check(tokens.toList(), getText, indexBasedIgnore)
 
     fun <T : PsiElement> check(tokens: Collection<T>, getText: (T) -> String = { it.text },
                                indexBasedIgnore: (T, Int) -> Boolean = { _, _ -> false }): Set<Typo> {

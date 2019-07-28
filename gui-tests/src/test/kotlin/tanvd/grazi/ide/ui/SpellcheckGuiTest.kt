@@ -20,19 +20,24 @@ class SpellcheckGuiTest : GraziGuiTestBase() {
             enableGit()
 
             editor {
+                waitAMoment()
                 moveToLine(1)
                 typeText("// text with eror")
-                waitAMoment()
 
+                waitAMoment()
+                waitForCodeAnalysisHighlightCount(HighlightSeverity.INFORMATION, 1)
                 requireHighlights(HighlightSeverity.INFORMATION, "Typo: In word 'eror'")
             }
 
             settings { } // FIXME workaround for check highlights in git dialog
 
             gitEditor {
+                waitAMoment()
                 moveToLine(1)
                 typeText("text with eror")
 
+                waitAMoment()
+                waitForCodeAnalysisHighlightCount(HighlightSeverity.INFORMATION, 1)
                 requireHighlights(HighlightSeverity.INFORMATION, "Typo: In word 'eror'")
             }
 
@@ -43,14 +48,15 @@ class SpellcheckGuiTest : GraziGuiTestBase() {
                 }
             }
 
-            waitAMoment()
-
             editor {
                 waitAMoment()
+                waitForCodeAnalysisHighlightCount(HighlightSeverity.INFORMATION, 1)
                 requireHighlights(HighlightSeverity.INFORMATION, "Possible spelling mistake")
             }
 
             gitEditor {
+                waitAMoment()
+                waitForCodeAnalysisHighlightCount(HighlightSeverity.INFORMATION, 1)
                 requireHighlights(HighlightSeverity.INFORMATION, "Possible spelling mistake")
             }
 
@@ -61,14 +67,15 @@ class SpellcheckGuiTest : GraziGuiTestBase() {
                 }
             }
 
-            waitAMoment()
-
             editor {
                 waitAMoment()
+                waitForCodeAnalysisHighlightCount(HighlightSeverity.INFORMATION, 1)
                 requireHighlights(HighlightSeverity.INFORMATION, "Typo: In word 'eror'")
             }
 
             gitEditor {
+                waitAMoment()
+                waitForCodeAnalysisHighlightCount(HighlightSeverity.INFORMATION, 1)
                 requireHighlights(HighlightSeverity.INFORMATION, "Typo: In word 'eror'")
             }
         }
