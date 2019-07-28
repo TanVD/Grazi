@@ -45,6 +45,7 @@
     ]]>
     </change-notes>
 
+    <depends optional="true" config-file="go.xml">org.jetbrains.plugins.go</depends>
     <depends optional="true" config-file="java.xml">com.intellij.modules.java</depends>
     <depends optional="true" config-file="javascript.xml">JavaScript</depends>
     <depends optional="true" config-file="json.xml">com.intellij.modules.json</depends>

@@ -1,0 +1,6 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="tanvd.grazi">
+        <languageSupport language="go" implementationClass="tanvd.grazi.ide.language.go.GoStringSupport"/>
+    </extensions>
+</idea-plugin>
+

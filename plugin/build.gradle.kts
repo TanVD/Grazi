@@ -18,7 +18,8 @@ intellij {
             "nl.rubensten.texifyidea:0.6.6",
             "CSS",
             "JavaScriptLanguage",
-            "properties"
+            "properties",
+            "org.jetbrains.plugins.go:191.7479.19.213"
     )
 
     alternativeIdePath = System.getProperty("idea.gui.test.alternativeIdePath")
