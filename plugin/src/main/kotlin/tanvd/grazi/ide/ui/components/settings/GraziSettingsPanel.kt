@@ -5,7 +5,7 @@ import com.intellij.openapi.options.ConfigurableUi
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.ScrollPaneFactory
 import com.intellij.ui.SideBorder
-import com.intellij.ui.components.JBCheckBox
+import com.intellij.ui.components.*
 import com.intellij.ui.components.labels.LinkLabel
 import com.intellij.ui.components.panels.HorizontalLayout
 import com.intellij.ui.layout.migLayout.createLayoutConstraints
@@ -20,8 +20,8 @@ import tanvd.grazi.ide.ui.components.GraziAddDeleteListPanel
 import tanvd.grazi.ide.ui.components.dsl.*
 import tanvd.grazi.ide.ui.components.rules.GraziRulesTree
 import tanvd.grazi.language.Lang
-import javax.swing.JComponent
-import javax.swing.JLabel
+import java.awt.BorderLayout
+import javax.swing.*
 
 class GraziSettingsPanel : ConfigurableUi<GraziConfig>, Disposable {
     private val cbEnableGraziSpellcheck = JBCheckBox(msg("grazi.ui.settings.enable.text"))
@@ -29,7 +29,7 @@ class GraziSettingsPanel : ConfigurableUi<GraziConfig>, Disposable {
 
     private val ruleLink = LinkLabel<Any?>(msg("grazi.ui.settings.rules.rule.description"), null)
     private val linkPanel = panel(HorizontalLayout(0)) {
-        border = padding(JBUI.insetsBottom(10))
+        border = padding(JBUI.insetsBottom(7))
         isVisible = false
         name = "GRAZI_LINK_PANEL"
 
@@ -37,19 +37,18 @@ class GraziSettingsPanel : ConfigurableUi<GraziConfig>, Disposable {
         add(JLabel(AllIcons.Ide.External_link_arrow))
     }
 
-    private val smallInfoPane = pane()
     private val descriptionPane = pane()
 
     private val rulesTree by lazy {
         GraziRulesTree {
-            smallInfoPane.text = getSmallInfoPaneContent(it)
-
             linkPanel.isVisible = getLinkLabelListener(it)?.let { listener ->
                 ruleLink.setListener(listener, null)
                 true
             } ?: false
 
-            descriptionPane.text = getDescriptionPaneContent(it)
+            descriptionPane.text = getDescriptionPaneContent(it).also {
+                descriptionPane.isVisible = it.isNotBlank()
+            }
         }
     }
 
@@ -135,9 +134,12 @@ class GraziSettingsPanel : ConfigurableUi<GraziConfig>, Disposable {
 
                 panel(MigLayout(createLayoutConstraints().flowY().fillX()), constraint = CC().grow().width("55%")) {
                     border = padding(JBUI.insets(30, 20, 0, 0))
-                    add(smallInfoPane.apply { border = padding(JBUI.insetsBottom(10)) }, CC().grow())
                     add(linkPanel, CC().grow().hideMode(3))
-                    add(ScrollPaneFactory.createScrollPane(descriptionPane, SideBorder.NONE), CC().grow().push())
+
+                    val descriptionPanel = JBPanelWithEmptyText(BorderLayout(0, 0)).withEmptyText(msg("grazi.ui.settings.rules.no-description")).also {
+                        it.add(descriptionPane)
+                    }
+                    add(ScrollPaneFactory.createScrollPane(descriptionPanel, SideBorder.NONE).also { it.horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER }, CC().grow().push())
                 }
             }
         }

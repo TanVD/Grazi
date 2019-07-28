@@ -11,6 +11,8 @@ import tanvd.grazi.ide.ui.components.dsl.msg
 import tanvd.grazi.language.Lang
 import tanvd.grazi.language.LangTool
 import tanvd.grazi.utils.*
+import tanvd.kex.orFalse
+import tanvd.kex.orTrue
 
 private const val MINIMUM_EXAMPLES_SIMILARITY = 0.2
 private val levenshtein = LevenshteinDistance()
@@ -19,20 +21,7 @@ fun CharSequence.isSimilarTo(sequence: CharSequence): Boolean {
     return levenshtein.apply(this, sequence).toDouble() / length < MINIMUM_EXAMPLES_SIMILARITY
 }
 
-fun GraziSettingsPanel.getSmallInfoPaneContent(it: Any): String {
-    return when (it) {
-        is Rule -> html {
-            unsafe { +msg("grazi.ui.settings.rules.rule.template", it.description, it.category.name) }
-        }
-        is Lang -> html {
-            unsafe { +msg("grazi.ui.settings.rules.language.template", it.displayName) }
-        }
-        is ComparableCategory -> html {
-            unsafe { +msg("grazi.ui.settings.rules.category.template", it.name) }
-        }
-        else -> ""
-    }
-}
+fun GraziSettingsPanel.hasDescription(rule: Rule) = rule.url != null || rule.incorrectExamples?.isNotEmpty().orFalse() || LangTool.getRuleLanguages(rule.id)?.let { it.size > 1 }.orFalse()
 
 fun GraziSettingsPanel.getLinkLabelListener(it: Any): LinkListener<Any?>? {
     return when (it) {
@@ -42,75 +31,75 @@ fun GraziSettingsPanel.getLinkLabelListener(it: Any): LinkListener<Any?>? {
 }
 
 fun GraziSettingsPanel.getDescriptionPaneContent(it: Any): String {
-    return when (it) {
-        is Rule -> html {
-            table {
-                cellpading = "0"
-                cellspacing = "0"
+    return when {
+        it is Lang -> html {
+            unsafe { +msg("grazi.ui.settings.rules.language.template", it.displayName) }
+        }
+        it is ComparableCategory -> html {
+            unsafe { +msg("grazi.ui.settings.rules.category.template", it.name) }
+        }
+        it is Rule && hasDescription(it) -> {
+            html {
+                table {
+                    cellpading = "0"
+                    cellspacing = "0"
 
-                LangTool.getRuleLanguages(it.id)?.let { languages ->
-                    if (languages.size > 1) {
-                        tr {
-                            td {
-                                colSpan = "2"
-                                style = "padding-bottom: 10px;"
+                    LangTool.getRuleLanguages(it.id)?.let { languages ->
+                        if (languages.size > 1) {
+                            tr {
+                                td {
+                                    colSpan = "2"
+                                    style = "padding-bottom: 10px;"
 
-                                +msg("grazi.ui.settings.rules.rule.multilanguage.start")
-                                +" "
-                                strong {
-                                    +languages.first().displayName
-                                    languages.drop(1).forEach {
-                                        +", ${it.displayName}"
+                                    +msg("grazi.ui.settings.rules.rule.multilanguage.start")
+                                    +" "
+                                    strong {
+                                        +languages.first().displayName
+                                        languages.drop(1).forEach {
+                                            +", ${it.displayName}"
+                                        }
                                     }
+                                    +" "
+                                    +msg("grazi.ui.settings.rules.rule.multilanguage.end")
                                 }
-                                +" "
-                                +msg("grazi.ui.settings.rules.rule.multilanguage.end")
                             }
                         }
                     }
-                }
 
-                it.incorrectExamples?.let { examples ->
-                    if (examples.isNotEmpty()) {
-                        tr {
-                            td {
-                                colSpan = "2"
-                                style = "padding-bottom: 5px;"
-                                +msg("grazi.ui.settings.rules.rule.examples")
-                            }
-                        }
-
-                        val accepted = ArrayList<IncorrectExample>()
-                        // remove very similar examples
-                        examples.forEach { example ->
-                            if (accepted.none { it.text.isSimilarTo(example.text) }) {
-                                accepted.add(example)
-                            }
-                        }
-
-                        accepted.forEach { example ->
-                            tr {
-                                td {
-                                    valign = "top"
-                                    style = "padding-bottom: 5px; padding-right: 5px; color: gray;"
-                                    +msg("grazi.ui.settings.rules.rule.incorrect")
-                                }
-                                td {
-                                    style = "padding-bottom: 5px; width: 100%;"
-                                    toIncorrectHtml(example)
+                    it.incorrectExamples?.let { examples ->
+                        if (examples.isNotEmpty()) {
+                            val accepted = ArrayList<IncorrectExample>()
+                            // remove very similar examples
+                            examples.forEach { example ->
+                                if (accepted.none { it.text.isSimilarTo(example.text) }) {
+                                    accepted.add(example)
                                 }
                             }
 
-                            if (example.corrections.any { it.isNotBlank() }) {
+                            accepted.forEach { example ->
                                 tr {
                                     td {
                                         valign = "top"
-                                        style = "padding-bottom: 10px; padding-right: 5px; color: gray;"
-                                        +msg("grazi.ui.settings.rules.rule.correct")
+                                        style = "padding-bottom: 5px; padding-right: 5px; color: gray;"
+                                        +msg("grazi.ui.settings.rules.rule.incorrect")
                                     }
                                     td {
-                                        style = "padding-bottom: 10px; width: 100%;"
-                                        toCorrectHtml(example)
+                                        style = "padding-bottom: 5px; width: 100%;"
+                                        toIncorrectHtml(example)
+                                    }
+                                }
+
+                                if (example.corrections.any { it.isNotBlank() }) {
+                                    tr {
+                                        td {
+                                            valign = "top"
+                                            style = "padding-bottom: 10px; padding-right: 5px; color: gray;"
+                                            +msg("grazi.ui.settings.rules.rule.correct")
+                                        }
+                                        td {
+                                            style = "padding-bottom: 10px; width: 100%;"
+                                            toCorrectHtml(example)
+                                        }
                                     }
                                 }
                             }
