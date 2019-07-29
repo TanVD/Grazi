@@ -5,7 +5,7 @@ intellij {
     pluginName = "Grazi"
     version = "2019.2"
     downloadSources = true
-    type = "IU"
+    type = "IС"
 
     updateSinceUntilBuild = false
 
@@ -19,12 +19,10 @@ intellij {
 
 tasks.withType<RunIdeTask> {
     jvmArgs("-Xmx2g")
-
+    println(jbProperties<String>())
     systemProperties(jbProperties<String>())
-
     args(execArguments())
 }
-
 
 val testsJar = tasks.create("guiTestJar", Jar::class) {
     group = "build"
@@ -35,14 +33,9 @@ val testsJar = tasks.create("guiTestJar", Jar::class) {
 }
 
 tasks.withType<PrepareSandboxTask> {
-    from(_sourceSets["test"].resources) {
-        exclude("META-INF")
-        into("testGuiFramework/lib")
-    }
-
     from(testsJar) {
         exclude("testData/*")
-        into("testGuiFramework/lib")
+        into("Test GUI Framework/lib")
     }
 }
 

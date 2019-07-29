@@ -30,6 +30,8 @@ val Project.channel: String
     }
 
 inline fun <reified Value> jbProperties() = System.getProperties()
-        .filterKeys { it.toString().startsWith("idea") || it.toString().startsWith("jb") }.mapKeys { it.key as String }.mapValues { it.value as Value }.toMutableMap()
+        .filterKeys { it.toString().startsWith("idea") || it.toString().startsWith("jb") &&
+                ((it as String) != "idea.home.path" && it != "jb.vmOptionsFile")
+        }.mapKeys { it.key as String }.mapValues { it.value as Value }.toMutableMap()
 
 fun execArguments() = System.getProperty("exec.args", "").split(",")

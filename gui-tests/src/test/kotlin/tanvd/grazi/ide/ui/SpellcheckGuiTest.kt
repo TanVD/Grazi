@@ -14,10 +14,9 @@ class SpellcheckGuiTest : GraziGuiTestBase() {
     @Test
     fun `test spellcheck checkbox`() {
         simpleProject {
-            waitAMoment()
-
-            openTestFile()
             enableGit()
+            waitAMoment()
+            openTestFile()
 
             editor {
                 waitAMoment()
@@ -30,6 +29,7 @@ class SpellcheckGuiTest : GraziGuiTestBase() {
             }
 
             settings { } // FIXME workaround for check highlights in git dialog
+            settings { }
 
             gitEditor {
                 waitAMoment()
