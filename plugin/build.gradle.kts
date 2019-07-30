@@ -29,10 +29,6 @@ intellij {
 
 tasks.withType<RunIdeTask> {
     jvmArgs("-Xmx2g")
-
-    systemProperties(jbProperties<String>())
-
-    args(execArguments())
 }
 
 tasks.withType<PublishTask> {
