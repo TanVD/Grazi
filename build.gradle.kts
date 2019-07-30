@@ -7,8 +7,8 @@ version = "2019.1-3.$channel"
 plugins {
     id("tanvd.kosogor") version "1.0.7" apply true
     id("io.gitlab.arturbosch.detekt") version ("1.0.0-RC14") apply true
-    id("org.jetbrains.intellij") apply true
-    kotlin("jvm") version "1.3.41" apply true
+    id("org.jetbrains.intellij") apply false
+    kotlin("jvm") version "1.3.41" apply false
 }
 
 allprojects {
