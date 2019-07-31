@@ -6,25 +6,22 @@ version = rootProject.version
 
 intellij {
     pluginName = "Grazi"
-    version = "2019.1.3"
+    version = Versions.intellij
     downloadSources = true
     type = "IC"
 
     updateSinceUntilBuild = false
 
     setPlugins(
-            "Kotlin",
+            "org.intellij.plugins.markdown:191.7479.1",
             "com.intellij.testGuiFramework:0.9.44.1@nightly"
     )
-
-    alternativeIdePath = System.getProperty("idea.gui.test.alternativeIdePath")
 }
 
 tasks.withType<RunIdeTask> {
-    jvmArgs("-Xmx2g")
+    jvmArgs("-Xmx1g")
 
     systemProperties(jbProperties<String>())
-
     args(execArguments())
 }
 
@@ -38,11 +35,6 @@ val testsJar = tasks.create("guiTestJar", Jar::class) {
 }
 
 tasks.withType<PrepareSandboxTask> {
-    from(_sourceSets["test"].resources) {
-        exclude("META-INF")
-        into("testGuiFramework/lib")
-    }
-
     from(testsJar) {
         exclude("testData/*")
         into("testGuiFramework/lib")

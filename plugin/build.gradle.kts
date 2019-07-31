@@ -7,7 +7,7 @@ version = rootProject.version
 
 intellij {
     pluginName = "Grazi"
-    version = "2019.1.3"
+    version = Versions.intellij
     downloadSources = true
     type = "IU"
 
@@ -23,12 +23,10 @@ intellij {
             "JavaScriptLanguage",
             "properties"
     )
-
-    alternativeIdePath = System.getProperty("idea.gui.test.alternativeIdePath")
 }
 
 tasks.withType<RunIdeTask> {
-    jvmArgs("-Xmx2g")
+    jvmArgs("-Xmx1g")
 }
 
 tasks.withType<PublishTask> {
@@ -36,8 +34,6 @@ tasks.withType<PublishTask> {
     token(System.getenv("publish_token"))
     channels(channel)
 }
-
-val langs = setOf("ru", "fr", "de", "pl", "it", "zh", "ja", "uk", "el", "ro", "es", "pt", "sk", "fa", "nl")
 
 dependencies {
     compileOnly(kotlin("stdlib"))
@@ -50,11 +46,9 @@ dependencies {
         exclude("org.slf4j", "slf4j-api")
     }
 
-//    for (lang in langs) {
-//        testRuntime("org.languagetool", "language-$lang", Versions.languageTool) {
-//            exclude("org.slf4j", "slf4j-api")
-//        }
-//    }
+    testRuntime("org.languagetool", "language-ru", Versions.languageTool) {
+        exclude("org.slf4j", "slf4j-api")
+    }
 
     compile("org.jetbrains.kotlinx", "kotlinx-html-jvm", "0.6.11")
 
