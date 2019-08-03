@@ -16,12 +16,14 @@ class SpellcheckGuiTest : GraziGuiTestBase() {
         simpleProject {
             enableGit()
             waitAMoment()
+
+            enableGit()
             openTestFile()
 
             editor {
                 waitAMoment()
                 moveToLine(1)
-                typeText("// text with eror")
+                typeText("text with eror")
 
                 waitAMoment()
                 waitForCodeAnalysisHighlightCount(HighlightSeverity.INFORMATION, 1)

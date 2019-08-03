@@ -13,34 +13,33 @@ import kotlin.test.assertEquals
 class NativeLanguageGuiTest : GraziGuiTestBase() {
     @Test
     fun `test native language combobox`() {
-        settings {
-            with(combobox("Native language:")) {
-                val lang = "English (US)"
-                assertEquals(lang, selectedItem())
-                assertEquals(langs, listItems())
+        simpleProject {
+            settings {
+                with(combobox("Native language:")) {
+                    val lang = "English (US)"
+                    assertEquals(lang, selectedItem())
 
-                with(jTree(lang)) {
-                    assert(path(lang, "False friends").hasPath())
-                    assert(!path(lang, "Омонимы").hasPath())
-                }
+                    with(jTree(lang)) {
+                        assert(path(lang, "False friends").hasPath())
+                        assert(!path(lang, "Омонимы").hasPath())
+                    }
 
-                selectItem("Russian")
-                button("Apply").clickWhenEnabled()
+                    selectItem("Russian")
+                    button("Apply").clickWhenEnabled()
 
-                with(jTree(lang)) {
-                    assert(!path(lang, "False friends").hasPath())
-                    assert(path(lang, "Омонимы").hasPath())
+                    with(jTree(lang)) {
+                        assert(!path(lang, "False friends").hasPath())
+                        assert(path(lang, "Омонимы").hasPath())
+                    }
                 }
             }
-        }
 
-        ideFrame {
             openTestFile()
 
             editor {
                 waitAMoment()
                 moveToLine(1)
-                typeText("// I love a baton")
+                typeText("I love a baton")
 
                 waitAMoment()
                 waitForCodeAnalysisHighlightCount(HighlightSeverity.INFORMATION, 1)
@@ -50,7 +49,6 @@ class NativeLanguageGuiTest : GraziGuiTestBase() {
             settings {
                 combobox("Native language:").selectItem("English (US)")
             }
-
 
             editor {
                 waitAMoment()

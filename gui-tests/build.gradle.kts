@@ -6,23 +6,21 @@ version = rootProject.version
 
 intellij {
     pluginName = "Grazi"
-    version = "2019.2"
+    version = Versions.intellij
     downloadSources = true
     type = "IС"
 
     updateSinceUntilBuild = false
 
     setPlugins(
-            "Kotlin",
+            "org.intellij.plugins.markdown:192.5728.98",
             "com.intellij.testGuiFramework:0.10.1@nightly"
     )
-
-    alternativeIdePath = System.getProperty("idea.gui.test.alternativeIdePath")
 }
 
 tasks.withType<RunIdeTask> {
-    jvmArgs("-Xmx2g")
-    println(jbProperties<String>())
+    jvmArgs("-Xmx1g")
+
     systemProperties(jbProperties<String>())
     args(execArguments())
 }

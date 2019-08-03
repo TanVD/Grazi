@@ -7,7 +7,7 @@ version = rootProject.version
 
 intellij {
     pluginName = "Grazi"
-    version = "2019.2"
+    version = Versions.intellij
     downloadSources = true
     type = "IU"
 
@@ -24,12 +24,10 @@ intellij {
             "JavaScriptLanguage",
             "properties"
     )
-
-    alternativeIdePath = System.getProperty("idea.gui.test.alternativeIdePath")
 }
 
 tasks.withType<RunIdeTask> {
-    jvmArgs("-Xmx2g")
+    jvmArgs("-Xmx1g")
 }
 
 tasks.withType<PublishTask> {
