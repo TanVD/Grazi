@@ -69,12 +69,12 @@ class GraziInspection : LocalInspectionTool() {
                                 tr {
                                     td {
                                         valign = "top"
-                                        style = "padding-bottom: 5px; padding-top: 5px; padding-right: 5px; color: gray; vertical-align: top;"
+                                        style = "padding-top: 5px; padding-right: 5px; color: gray; vertical-align: top;"
                                         +msg("grazi.ui.settings.rules.rule.correct")
                                         if (!isOnTheFly) nbsp()
                                     }
                                     td {
-                                        style = "padding-bottom: 5px; padding-top: 5px; width: 100%;"
+                                        style = "padding-top: 5px; width: 100%;"
                                         toCorrectHtml(it)
                                         if (!isOnTheFly) nbsp()
                                     }

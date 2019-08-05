@@ -6,8 +6,8 @@ import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.codeInspection.ex.LocalInspectionToolWrapper
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElementVisitor
-import com.intellij.vcs.commit.BaseCommitMessageInspection
-import com.intellij.vcs.commit.CommitMessageInspectionProfile
+import com.intellij.vcs.commit.message.BaseCommitMessageInspection
+import com.intellij.vcs.commit.message.CommitMessageInspectionProfile
 import tanvd.grazi.GraziConfig
 import tanvd.grazi.ide.msg.GraziStateLifecycle
 

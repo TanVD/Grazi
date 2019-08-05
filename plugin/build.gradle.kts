@@ -14,10 +14,11 @@ intellij {
     updateSinceUntilBuild = false
 
     setPlugins(
+            "java",
             "markdown",
             "Kotlin",
-            "PythonCore:2019.1.191.6183.53",
-            "org.rust.lang:0.2.98.2125-191",
+            "PythonCore:2019.2.192.5728.74",
+            "org.rust.lang:0.2.101.2129-192",
             "nl.rubensten.texifyidea:0.6.6",
             "CSS",
             "JavaScriptLanguage",

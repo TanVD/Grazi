@@ -7,15 +7,15 @@ import com.intellij.pom.java.LanguageLevel
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiPlainText
 import com.intellij.testFramework.LightProjectDescriptor
-import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase
+import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase
+import com.intellij.testFramework.fixtures.impl.CodeInsightTestFixtureImpl
 import tanvd.grazi.ide.GraziInspection
 import tanvd.grazi.ide.msg.GraziStateLifecycle
 import tanvd.grazi.language.Lang
 import tanvd.grazi.utils.filterFor
 import java.io.File
 
-abstract class GraziTestBase(private val withSpellcheck: Boolean) : LightCodeInsightFixtureTestCase() {
-
+abstract class GraziTestBase(private val withSpellcheck: Boolean) : LightJavaCodeInsightFixtureTestCase() {
     override fun getTestDataPath(): String {
         return File("src/test/resources").canonicalPath
     }
@@ -43,6 +43,10 @@ abstract class GraziTestBase(private val withSpellcheck: Boolean) : LightCodeIns
 
     protected fun runHighlightTestForFile(file: String) {
         myFixture.configureByFile(file)
+
+        // Markdown changed PSI during highlighting
+        (myFixture as? CodeInsightTestFixtureImpl)?.canChangeDocumentDuringHighlighting(true)
+
         myFixture.testHighlighting(true, false, false, file)
     }
 

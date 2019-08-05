@@ -8,13 +8,13 @@ intellij {
     pluginName = "Grazi"
     version = Versions.intellij
     downloadSources = true
-    type = "IC"
+    type = "IС"
 
     updateSinceUntilBuild = false
 
     setPlugins(
-            "org.intellij.plugins.markdown:191.7479.1",
-            "com.intellij.testGuiFramework:0.9.44.1@nightly"
+            "org.intellij.plugins.markdown:192.5728.98",
+            "com.intellij.testGuiFramework:0.10.1@nightly"
     )
 }
 
@@ -24,7 +24,6 @@ tasks.withType<RunIdeTask> {
     systemProperties(jbProperties<String>())
     args(execArguments())
 }
-
 
 val testsJar = tasks.create("guiTestJar", Jar::class) {
     group = "build"
@@ -37,7 +36,7 @@ val testsJar = tasks.create("guiTestJar", Jar::class) {
 tasks.withType<PrepareSandboxTask> {
     from(testsJar) {
         exclude("testData/*")
-        into("testGuiFramework/lib")
+        into("Test GUI Framework/lib")
     }
 }
 

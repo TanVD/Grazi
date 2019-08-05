@@ -16,23 +16,30 @@
     <p>English is enabled by default when you install the plugin. To enable other languages, open Settings/Preferences
        and select <strong>Tools</strong> > <strong>Grazi</strong>.</p>
 
-    <p><strong>NOTE:</strong> All verification is performed locally, inside your IDE. The plugin does not send any of
-       your data anywhere.</p>
+    <p><strong>NOTE:</strong> All verification is performed locally, inside your IDE.</p>
     ]]></description>
 
     <change-notes><![CDATA[
-    <h4>2019.1-4</h4>
+    <h4>2019.2-4</h4>
     <ul>
         <li>Fixes for UI</li>
         <li>Bug fixes for Markdown</li>
         <li>Performance improvement of XML</li>
     </ul>
-    <h4>2019.1-3</h4>
+    <h4>2019.2-3</h4>
     <ul>
         <li>Huge performance improvements for all languages</li>
         <li>Fully reworked UI</li>
         <li>Configurations of enabled rules in UI</li>
         <li>Support of Rust, JSON, JavaScript, Latex, Properties</li>
+    </ul>
+    <h4>2019.2-2</h4>
+    <ul>
+        <li>Update since-until build</li>
+    </ul>
+    <h4>2019.2-1</h4>
+    <ul>
+        <li>Fixes for 2019.2 EAP</li>
     </ul>
     <h4>2019.1-2</h4>
     <ul>
@@ -62,7 +69,7 @@
     <depends optional="true" config-file="latex.xml">nl.rubensten.texifyidea</depends>
     <depends optional="true" config-file="xml.xml">com.intellij.modules.xml</depends>
 
-    <idea-version since-build="191" until-build="191.*"/>
+    <idea-version since-build="192.3645"/>
 
     <application-components>
         <component>
