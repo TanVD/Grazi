@@ -8,7 +8,7 @@ intellij {
     pluginName = "Grazi"
     version = Versions.intellij
     downloadSources = true
-    type = "IС"
+    type = System.getenv().getOrDefault("TEST_IDE", "IC")
 
     updateSinceUntilBuild = false
 
