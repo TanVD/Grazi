@@ -1,11 +1,6 @@
 package tanvd.grazi.ide.ui
 
-import com.intellij.lang.annotation.HighlightSeverity
-import com.intellij.testGuiFramework.framework.RunWithIde
 import com.intellij.testGuiFramework.impl.*
-import com.intellij.testGuiFramework.launcher.GuiTestLocalLauncher.project
-import com.intellij.testGuiFramework.launcher.ide.CommunityIde
-import com.intellij.testGuiFramework.util.Key
 import com.intellij.testGuiFramework.util.step
 import org.junit.Test
 import tanvd.grazi.GraziGuiTestBase
