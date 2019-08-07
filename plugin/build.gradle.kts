@@ -36,26 +36,6 @@ tasks.withType<PublishTask> {
     channels(channel)
 }
 
-fun ExternalModuleDependency.excludesForLT() {
-    exclude("org.slf4j", "slf4j-api")
-    //exclude("ml.dmlc", "xgboost4j")
-    exclude("com.typesafe.akka")
-    exclude("org.scala-lang")
-    exclude("biz.k11i", "xgboost-predictor")
-
-    exclude("com.google.guava", "guava")
-    exclude("com.intellij", "annotations")
-    exclude("net.java.dev.jna", "jna")
-
-    exclude("javax.xml.bind", "jaxb-api")
-    exclude("org.glassfish.jaxb", "jaxb-runtime")
-
-    exclude("com.fasterxml.jackson.core", "jackson-databind")
-
-    exclude("org.apache.lucene", "lucene-core")
-    exclude("org.apache.lucene", "lucene-backward-codecs")
-}
-
 dependencies {
     compileOnly(kotlin("stdlib"))
 
@@ -67,24 +47,10 @@ dependencies {
         excludesForLT()
     }
 
-    testRuntime("org.languagetool", "language-ru", Versions.languageTool) {
-        excludesForLT()
-    }
+    testRuntime("org.languagetool", "language-ru", Versions.languageTool)
 
-    // region aether-for-non-idea-ide
     // for PyCharm and others no Intellij Idea applications
-    compile ("org.eclipse.aether", "aether-connector-basic", "1.1.0")
-    compile ("org.eclipse.aether", "aether-transport-file", "1.1.0")
-    compile ("org.eclipse.aether", "aether-transport-http", "1.1.0") {
-        exclude("org.slf4j", "slf4j-api")
-        exclude("org.apache.httpcomponents", "httpclient")
-    }
-    compile("org.apache.maven", "maven-aether-provider", "3.3.9"){
-        exclude("org.slf4j", "slf4j-api")
-        exclude("com.google.guava", "guava")
-        exclude("org.apache.commons", "commons-lang3")
-    }
-    // endregion aether-for-non-idea-ide
+    addAetherDependencies()
 
     compile("org.jetbrains.kotlinx", "kotlinx-html-jvm", "0.6.11")
 
