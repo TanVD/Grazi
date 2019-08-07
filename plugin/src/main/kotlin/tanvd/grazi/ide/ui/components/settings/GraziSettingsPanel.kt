@@ -2,10 +2,13 @@ package tanvd.grazi.ide.ui.components.settings
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.options.ConfigurableUi
+import com.intellij.openapi.project.guessCurrentProject
 import com.intellij.openapi.ui.ComboBox
+import com.intellij.ui.ContextHelpLabel
 import com.intellij.ui.ScrollPaneFactory
 import com.intellij.ui.SideBorder
-import com.intellij.ui.components.*
+import com.intellij.ui.components.JBCheckBox
+import com.intellij.ui.components.JBPanelWithEmptyText
 import com.intellij.ui.components.labels.LinkLabel
 import com.intellij.ui.components.panels.HorizontalLayout
 import com.intellij.ui.layout.migLayout.createLayoutConstraints
@@ -20,13 +23,46 @@ import tanvd.grazi.ide.ui.components.GraziAddDeleteListPanel
 import tanvd.grazi.ide.ui.components.dsl.*
 import tanvd.grazi.ide.ui.components.rules.GraziRulesTree
 import tanvd.grazi.language.Lang
+import tanvd.grazi.remote.LangDownloader
 import java.awt.BorderLayout
-import javax.swing.*
+import javax.swing.JComponent
+import javax.swing.JLabel
+import javax.swing.ScrollPaneConstants
 
 class GraziSettingsPanel : ConfigurableUi<GraziConfig>, Disposable {
     private val cbEnableGraziSpellcheck = JBCheckBox(msg("grazi.ui.settings.enable.text"))
-    private val cmbNativeLanguage = ComboBox<Lang>(Lang.sortedValues.toTypedArray())
 
+    private val nativeLangLink: LinkLabel<Any?> = LinkLabel<Any?>("", AllIcons.General.Warning).apply {
+        setListener(
+                { _, _ ->
+                    with(LangDownloader) { (cmbNativeLanguage.selectedItem as Lang).downloadLanguage(guessCurrentProject(cmbNativeLanguage)) }
+                    updateWarnings()
+                    rulesTree.reset()
+                }, null)
+    }
+
+    private val cmbNativeLanguage = ComboBox(Lang.sortedValues().toTypedArray()).apply {
+        addItemListener { e ->
+            val lang = (e.item as Lang)
+
+            if (lang.jLanguage == null) {
+                nativeLangLink.text = "Download ${lang.displayName}"
+                nativeLangLink.isVisible = true
+            } else {
+                nativeLangLink.isVisible = false
+            }
+        }
+    }
+
+    private val langLink: LinkLabel<Any?> = LinkLabel<Any?>(msg("grazi.languages.action"), AllIcons.General.Warning).apply {
+        border = padding(JBUI.insetsTop(10))
+        setListener(
+                { _, _ ->
+                    LangDownloader.downloadMissingLanguages(guessCurrentProject(descriptionPane))
+                    updateWarnings()
+                    rulesTree.reset()
+                }, null)
+    }
     private val ruleLink = LinkLabel<Any?>(msg("grazi.ui.settings.rules.rule.description"), null)
     private val linkPanel = panel(HorizontalLayout(0)) {
         border = padding(JBUI.insetsBottom(7))
@@ -53,7 +89,12 @@ class GraziSettingsPanel : ConfigurableUi<GraziConfig>, Disposable {
     }
 
     private val adpEnabledLanguages by lazy {
-        GraziAddDeleteListPanel({ rulesTree.addLang(it) }, { rulesTree.removeLang(it) })
+        GraziAddDeleteListPanel({ rulesTree.addLang(it) }, { rulesTree.removeLang(it); updateWarnings() })
+    }
+
+    private fun updateWarnings() {
+        langLink.isVisible = GraziConfig.get().hasMissedLanguages(withNative = false)
+        nativeLangLink.isVisible = (cmbNativeLanguage.selectedItem as Lang).jLanguage == null
     }
 
     override fun isModified(settings: GraziConfig): Boolean {
@@ -99,6 +140,7 @@ class GraziSettingsPanel : ConfigurableUi<GraziConfig>, Disposable {
             )
         }
 
+        updateWarnings()
         rulesTree.reset()
     }
 
@@ -108,6 +150,8 @@ class GraziSettingsPanel : ConfigurableUi<GraziConfig>, Disposable {
         adpEnabledLanguages.reset(settings)
         rulesTree.reset()
         rulesTree.resetSelection()
+
+        updateWarnings()
     }
 
     override fun getComponent(): JComponent {
@@ -115,14 +159,25 @@ class GraziSettingsPanel : ConfigurableUi<GraziConfig>, Disposable {
             panel(MigLayout(createLayoutConstraints(), AC().grow()), constraint = CC().growX().wrap()) {
                 border = border(msg("grazi.ui.settings.languages.text"), false, JBUI.insetsBottom(10), false)
 
-                add(adpEnabledLanguages, CC().growX().maxHeight("").width("45%").minWidth("250px").minHeight("120px").maxHeight("120px").alignY("top"))
+                panel(BorderLayout(), CC().growX().maxHeight("").width("45%").minWidth("250px").minHeight("120px").maxHeight("120px").alignY("top")) {
+                    add(adpEnabledLanguages, BorderLayout.CENTER)
+                    add(langLink, BorderLayout.SOUTH)
+                }
 
                 panel(VerticalLayout(), CC().grow().width("55%").minWidth("250px").alignY("top")) {
                     border = padding(JBUI.insetsLeft(20))
 
-                    add(wrap(cmbNativeLanguage, msg("grazi.ui.settings.languages.native.tooltip"), msg("grazi.ui.settings.languages.native.text")))
-                    add(wrap(cbEnableGraziSpellcheck, msg("grazi.ui.settings.enable.note")))
+                    panel(MigLayout(createLayoutConstraints(), AC()), constraint = "") {
+                        border = padding(JBUI.insetsBottom(10))
+                        add(wrapWithLabel(cmbNativeLanguage, msg("grazi.ui.settings.languages.native.text")), CC().minWidth("220px").maxWidth("380px"))
+                        add(ContextHelpLabel.create(msg("grazi.ui.settings.languages.native.help")).apply { border = padding(JBUI.insetsLeft(5)) }, CC().width("30px").alignX("left").wrap())
+                        add(nativeLangLink, CC().hideMode(3))
+                    }
+
+                    add(wrapWithComment(cbEnableGraziSpellcheck, msg("grazi.ui.settings.enable.note")))
                 }
+
+                updateWarnings()
             }
 
             panel(MigLayout(createLayoutConstraints(), AC().grow(), AC().grow()), constraint = CC().grow()) {

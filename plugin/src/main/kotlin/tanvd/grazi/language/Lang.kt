@@ -2,46 +2,57 @@ package tanvd.grazi.language
 
 import org.languagetool.JLanguageTool
 import org.languagetool.Language
-import org.languagetool.language.*
 import tanvd.grazi.GraziBundle
+import tanvd.grazi.GraziPlugin
+import tanvd.grazi.remote.LangLibDescriptor
 
 @Suppress("unused")
-enum class Lang(val jLanguage: Language,
+enum class Lang(val displayName: String, val shortCode: String, private val className: String, val descriptor: LangLibDescriptor,
                 private val enabledRules: Set<String> = emptySet(),
-                private val disabledRules: Set<String> = emptySet()) {
-    BRITISH_ENGLISH(BritishEnglish(), GraziBundle.langConfig("en.enabled"), GraziBundle.langConfig("en.disabled")),
-    AMERICAN_ENGLISH(AmericanEnglish(), GraziBundle.langConfig("en.enabled"), GraziBundle.langConfig("en.disabled")),
-    CANADIAN_ENGLISH(CanadianEnglish(), GraziBundle.langConfig("en.enabled"), GraziBundle.langConfig("en.disabled")),
-    RUSSIAN(Russian(), GraziBundle.langConfig("ru.enabled")),
-    PERSIAN(Persian()),
-    FRENCH(French()),
-    GERMANY_GERMAN(GermanyGerman()),
-    AUSTRIAN_GERMAN(AustrianGerman()),
-    POLISH(Polish()),
-    ITALIAN(Italian()),
-    DUTCH(Dutch()),
-    PORTUGAL_PORTUGUESE(PortugalPortuguese()),
-    BRAZILIAN_PORTUGUESE(BrazilianPortuguese()),
-    CHINESE(Chinese()),
-    GREEK(Greek()),
-    JAPANESE(Japanese()),
-    ROMANIAN(Romanian()),
-    SLOVAK(Slovak()),
-    SPANISH(Spanish()),
-    UKRAINIAN(Ukrainian());
+                private val disabledRules: Set<String> = emptySet(),
+                private val disabledCategories: Set<String> = emptySet()) {
+    BRITISH_ENGLISH("English (GB)", "en", "BritishEnglish", LangLibDescriptor.ENGLISH,
+            GraziBundle.langConfig("en.rules.enabled"), GraziBundle.langConfig("en.rules.disabled"), GraziBundle.langConfig("en.categories.disabled")),
+    AMERICAN_ENGLISH("English (US)", "en", "AmericanEnglish", LangLibDescriptor.ENGLISH,
+            GraziBundle.langConfig("en.rules.enabled"), GraziBundle.langConfig("en.rules.disabled"), GraziBundle.langConfig("en.categories.disabled")),
+    CANADIAN_ENGLISH("English (Canadian)", "en", "CanadianEnglish", LangLibDescriptor.ENGLISH,
+            GraziBundle.langConfig("en.rules.enabled"), GraziBundle.langConfig("en.rules.disabled"), GraziBundle.langConfig("en.categories.disabled")),
+    RUSSIAN("Russian", "ru", "Russian", LangLibDescriptor.RUSSIAN, GraziBundle.langConfig("ru.rules.enabled")),
+    PERSIAN("Persian", "fa", "Persian", LangLibDescriptor.PERSIAN),
+    FRENCH("French", "fr", "French", LangLibDescriptor.FRENCH),
+    GERMANY_GERMAN("German (Germany)", "de", "GermanyGerman", LangLibDescriptor.GERMAN),
+    AUSTRIAN_GERMAN("German (Austria)", "de", "AustrianGerman", LangLibDescriptor.GERMAN),
+    POLISH("Polish", "pl", "Polish", LangLibDescriptor.POLISH),
+    ITALIAN("Italian", "it", "Italian", LangLibDescriptor.ITALIAN),
+    DUTCH("Dutch", "nl", "Dutch", LangLibDescriptor.DUTCH),
+    PORTUGAL_PORTUGUESE("Portuguese (Portugal)", "pt", "PortugalPortuguese", LangLibDescriptor.PORTUGUESE),
+    BRAZILIAN_PORTUGUESE("Portuguese (Brazil)", "pt", "BrazilianPortuguese", LangLibDescriptor.PORTUGUESE),
+    CHINESE("Chinese", "zh", "Chinese", LangLibDescriptor.CHINESE),
+    GREEK("Greek", "el", "Greek", LangLibDescriptor.GREEK),
+    JAPANESE("Japanese", "ja", "Japanese", LangLibDescriptor.JAPANESE),
+    ROMANIAN("Romanian", "ro", "Romanian", LangLibDescriptor.ROMANIAN),
+    SLOVAK("Slovak", "sk", "Slovak", LangLibDescriptor.SLOVAK),
+    SPANISH("Spanish", "es", "Spanish", LangLibDescriptor.SPANISH),
+    UKRAINIAN("Ukrainian", "uk", "Ukrainian", LangLibDescriptor.UKRAINIAN);
 
     companion object {
-        operator fun get(lang: Language): Lang? = values().find { it.shortCode == lang.shortCode }
+        operator fun get(lang: Language): Lang? = values().find { lang.name == it.displayName }
         operator fun get(code: String): Lang? = values().find { it.shortCode == code }
 
-        val sortedValues = values().sortedBy { it.displayName }
+        fun sortedValues() = values().sortedBy(Lang::displayName)
     }
 
-    val shortCode = jLanguage.shortCode!!
+    private var _jLanguage: Language? = null
+    val jLanguage: Language?
+        get() {
+            if (_jLanguage == null) {
+                _jLanguage = GraziPlugin.loadClass("org.languagetool.language.$className")?.newInstance() as Language?
+            }
 
-    val displayName = jLanguage.name!!
+            return _jLanguage
+        }
 
-    fun isEnglish() = this.shortCode == "en"
+    fun isEnglish() = shortCode == "en"
 
     override fun toString() = displayName
 
@@ -50,7 +61,9 @@ enum class Lang(val jLanguage: Language,
             tool.enableRule(it.id)
         }
 
-        tool.allRules.filter { rule -> disabledRules.any { rule.id.contains(it) } }.forEach {
+        tool.allRules.filter { rule ->
+            disabledRules.any { rule.id.contains(it) } || disabledCategories.any { rule.category.id.toString().contains(it) }
+        }.forEach {
             tool.disableRule(it.id)
         }
     }

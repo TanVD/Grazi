@@ -36,19 +36,21 @@ tasks.withType<PublishTask> {
     channels(channel)
 }
 
-val langs = setOf("en", "ru", "fr", "de", "pl", "it", "zh", "ja", "uk", "el", "ro", "es", "pt", "sk", "fa", "nl")
-
 dependencies {
     compileOnly(kotlin("stdlib"))
 
     compile("org.languagetool", "languagetool-core", Versions.languageTool) {
-        exclude("org.slf4j", "slf4j-api")
+        excludesForLT()
     }
-    for (lang in langs) {
-        compile("org.languagetool", "language-$lang", Versions.languageTool) {
-            exclude("org.slf4j", "slf4j-api")
-        }
+
+    compile("org.languagetool", "language-en", Versions.languageTool) {
+        excludesForLT()
     }
+
+    testRuntime("org.languagetool", "language-ru", Versions.languageTool)
+
+    // for PyCharm and others no Intellij Idea applications
+    addAetherDependencies()
 
     compile("org.jetbrains.kotlinx", "kotlinx-html-jvm", "0.6.11")
 
