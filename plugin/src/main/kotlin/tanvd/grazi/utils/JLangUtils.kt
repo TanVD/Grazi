@@ -2,8 +2,13 @@ package tanvd.grazi.utils
 
 import kotlinx.html.FlowOrPhrasingContent
 import kotlinx.html.strong
+import org.languagetool.Language
+import org.languagetool.Languages
 import org.languagetool.rules.*
+import tanvd.grazi.GraziConfig
+import tanvd.grazi.GraziPlugin
 import tanvd.grazi.grammar.Typo
+import tanvd.grazi.language.Lang
 
 fun Iterable<Typo>.spellcheckOnly(): Set<Typo> = filter { it.isSpellingTypo }.toSet()
 val Typo.isSpellingTypo: Boolean
@@ -42,6 +47,25 @@ fun FlowOrPhrasingContent.toCorrectHtml(example: IncorrectExample) {
         if (mistake.isNotEmpty() && example.corrections.isNotEmpty()) {
             strong {
                 +example.corrections.first().trim()
+            }
+        }
+    }
+}
+
+object LangToolInstrumentation {
+    fun registerLanguage(lang: Lang) {
+        if (lang in GraziConfig.get().enabledLanguagesAvailable) return
+
+        val dynLanguages = Languages::class.java.getDeclaredField("dynLanguages")
+        dynLanguages.isAccessible = true
+
+        @Suppress("UNCHECKED_CAST")
+        val langs = dynLanguages.get(null) as MutableList<Language>
+
+        lang.descriptor.langsClasses.forEach { className ->
+            val qualifiedName = "org.languagetool.language.$className"
+            if (langs.all { it::class.java.canonicalName != qualifiedName }) {
+                langs.add(GraziPlugin.loadClass(qualifiedName)!!.newInstance() as Language)
             }
         }
     }

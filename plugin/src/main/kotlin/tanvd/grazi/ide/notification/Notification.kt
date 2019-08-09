@@ -9,7 +9,7 @@ import tanvd.grazi.GraziConfig
 import tanvd.grazi.GraziPlugin
 import tanvd.grazi.ide.ui.components.dsl.msg
 import tanvd.grazi.language.Lang
-import tanvd.grazi.remote.LangDownloader
+import tanvd.grazi.remote.GraziRemote
 import tanvd.grazi.utils.joinToStringWithOxfordComma
 
 object Notification {
@@ -33,31 +33,28 @@ object Notification {
             .notify(project)
 
     fun showLanguagesMessage(project: Project) {
-        val langs = GraziConfig.get().getMissedLanguages().toList()
+        val langs = GraziConfig.get().missedLanguages
         val s = if (langs.size > 1) "s" else ""
         NOTIFICATION_GROUP_LANGUAGES
                 .createNotification(msg("grazi.languages.title", s),
-                        msg("grazi.languages.body", langs.joinToStringWithOxfordComma()),
+                        msg("grazi.languages.body", langs.toList().joinToStringWithOxfordComma()),
                         NotificationType.WARNING, null)
                 .addAction(object : NotificationAction(msg("grazi.languages.action.download", s)) {
                     override fun actionPerformed(e: AnActionEvent, notification: Notification) {
-                        LangDownloader.downloadMissingLanguages(project)
+                        GraziRemote.downloadMissing(project)
                         notification.hideBalloon()
                     }
                 })
                 .addAction(object : NotificationAction(msg("grazi.languages.action.disable", s)) {
                     override fun actionPerformed(e: AnActionEvent, notification: Notification) {
                         GraziConfig.update { state ->
-                            val enabledLanguages = state.enabledLanguages.toMutableSet()
-                            enabledLanguages.removeAll(state.getMissedLanguages())
-
                             val native = if (state.nativeLanguage.jLanguage == null) {
                                 Lang.AMERICAN_ENGLISH
                             } else {
                                 state.nativeLanguage
                             }
 
-                            state.copy(enabledLanguages = enabledLanguages, nativeLanguage = native)
+                            state.copy(enabledLanguages = state.enabledLanguages - state.missedLanguages, nativeLanguage = native)
                         }
                         notification.hideBalloon()
                     }

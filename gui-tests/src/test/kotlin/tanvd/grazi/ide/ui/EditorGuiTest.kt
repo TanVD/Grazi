@@ -35,23 +35,24 @@ class EditorGuiTest : GraziGuiTestBase() {
         toggle("Russian", "Логические ошибки", "Неверная дата, например «31 февраля 2014»")
         toggle("Russian", "Логические ошибки", "Опечатка «не проронила и слово»")
         toggle("Russian", "Общие правила", "Правописание через дефис")
+
+        waitADecentMoment()
     }
 
+    //FIXME Fix and enable test
     @Test
     fun `test rules highlightings in ide editor`() {
         project {
             settings {
                 actionButton("Add").click()
                 popupMenu("Russian").clickSearchedItem()
-
-                waitAMoment()
+                //Do not click OK until russian is loaded
+                waitADecentMoment()
             }
 
             openTestFile()
             editor {
-                waitAMoment()
                 step("Check default enabled/disabled rules") {
-                    moveToLine(1)
                     typeText(" В коробке лежало пять карандаша.\n")
                     typeText("А все ли ошибка найдены?\n")
                     typeText("Это случилось 31 ноября 2014 г.\n")
@@ -73,7 +74,6 @@ class EditorGuiTest : GraziGuiTestBase() {
                     typeText("This test is an easy one.\n")
 
 
-                    waitAMoment()
                     waitForCodeAnalysisHighlightCount(HighlightSeverity.INFORMATION, 10)
                     requireHighlights(HighlightSeverity.INFORMATION,
                             "пять карандаша &rarr; пять карандашейСклонение  «числительное + существительное»Incorrect:В коробке лежало пять карандаша.Correct:В коробке лежало пять карандашей.",
@@ -95,7 +95,6 @@ class EditorGuiTest : GraziGuiTestBase() {
                 }
 
                 editor {
-                    waitAMoment()
                     waitForCodeAnalysisHighlightCount(HighlightSeverity.INFORMATION, 6)
                     requireHighlights(HighlightSeverity.INFORMATION,
                             "БОЛЬШИЕ &rarr; большиеВсе буквы в слове ЗАГЛАВНЫЕIncorrect:Не выделяйте текст ЗАГЛАВНЫМИ буквами.Correct:Не выделяйте текст заглавными буквами.",

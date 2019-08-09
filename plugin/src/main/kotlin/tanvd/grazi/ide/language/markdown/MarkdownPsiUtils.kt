@@ -1,12 +1,11 @@
 package tanvd.grazi.ide.language.markdown
 
 import com.intellij.psi.PsiElement
-import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 import org.intellij.plugins.markdown.lang.MarkdownElementTypes
 import org.intellij.plugins.markdown.lang.MarkdownTokenTypes
-import tanvd.grazi.utils.*
-import tanvd.kex.orTrue
+import tanvd.grazi.utils.hasType
+import tanvd.grazi.utils.noParentOfTypes
 
 object MarkdownPsiUtils {
     private val headerTypes = setOf(MarkdownElementTypes.ATX_1, MarkdownElementTypes.ATX_2, MarkdownElementTypes.ATX_3,
@@ -35,8 +34,4 @@ object MarkdownPsiUtils {
 
     fun isWhitespace(element: PsiElement) = element.node.hasType(MarkdownTokenTypes.WHITE_SPACE)
     fun isEOL(element: PsiElement) = element.node.hasType(MarkdownTokenTypes.EOL)
-}
-
-inline fun <reified T : PsiElement> PsiElement.filterForTokens(vararg tokens: IElementType, excludeParents: TokenSet? = null): Collection<T> = filterFor { token ->
-    tokens.contains(token.node.elementType) && excludeParents?.let { token.node.noParentOfTypes(it) }.orTrue()
 }
