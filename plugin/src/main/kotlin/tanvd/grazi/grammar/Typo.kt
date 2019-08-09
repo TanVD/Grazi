@@ -37,7 +37,6 @@ data class Typo(val location: Location, val info: Info, val fixes: List<String> 
             return end in range
         }
 
-
         /**
          * Checks if [element] covers the start of typo location
          * Assumed that [pointer] at a typo is ancestor to passed [element]
