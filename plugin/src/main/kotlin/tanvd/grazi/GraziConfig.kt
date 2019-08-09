@@ -5,6 +5,7 @@ import com.intellij.openapi.project.ProjectManager
 import com.intellij.util.xmlb.annotations.Property
 import tanvd.grazi.ide.msg.GraziStateLifecycle
 import tanvd.grazi.language.Lang
+import tanvd.kex.ifTrue
 
 
 @State(name = "GraziConfig", storages = [Storage("grazi_global.xml")])
@@ -17,10 +18,20 @@ class GraziConfig : PersistentStateComponent<GraziConfig.State> {
                      @Property val userEnabledRules: Set<String> = HashSet(),
                      @Property val lastSeenVersion: String? = null) {
 
+        val enabledLanguagesAvailable: Set<Lang>
+            get() = enabledLanguages.filter { it.jLanguage != null }.toSet()
+
         fun clone() = State(
                 enabledLanguages = HashSet(enabledLanguages), nativeLanguage = nativeLanguage, enabledSpellcheck = enabledSpellcheck,
                 userWords = HashSet(userWords), userDisabledRules = HashSet(userDisabledRules), userEnabledRules = HashSet(userEnabledRules),
                 lastSeenVersion = lastSeenVersion)
+
+        fun hasMissedLanguages(withNative: Boolean = true) = (withNative && nativeLanguage.jLanguage == null) ||
+                enabledLanguages.any { it.jLanguage == null }
+
+        val missedLanguages: Set<Lang>
+            get() = enabledLanguages.filter { it.jLanguage == null }.toSet() +
+                    ((nativeLanguage.jLanguage == null).ifTrue { setOf(nativeLanguage) } ?: emptySet())
     }
 
     companion object {

@@ -14,21 +14,23 @@ object LangTool : GraziStateLifecycle {
     private const val cacheExpireAfterMinutes = 5
     private val rulesToLanguages = HashMap<String, MutableSet<Lang>>()
 
-    operator fun get(lang: Lang): JLanguageTool {
-        return langs.getOrPut(lang) {
-            val cache = ResultCache(cacheMaxSize, cacheExpireAfterMinutes, TimeUnit.MINUTES)
-            JLanguageTool(lang.jLanguage, GraziConfig.get().nativeLanguage.jLanguage,
-                    cache, UserConfig(GraziConfig.get().userWords.toList())).apply {
-                lang.configure(this)
+    operator fun get(lang: Lang): JLanguageTool? {
+        return lang.jLanguage?.let {
+            langs.getOrPut(lang) {
+                val cache = ResultCache(cacheMaxSize, cacheExpireAfterMinutes, TimeUnit.MINUTES)
+                JLanguageTool(it, GraziConfig.get().nativeLanguage.jLanguage,
+                        cache, UserConfig(GraziConfig.get().userWords.toList())).apply {
+                    lang.configure(this)
 
-                allRules.forEach { rule ->
-                    if (rule.id in GraziConfig.get().userDisabledRules) disableRule(rule.id)
-                    if (rule.id in GraziConfig.get().userEnabledRules) enableRule(rule.id)
-                }
+                    allRules.forEach { rule ->
+                        if (rule.id in GraziConfig.get().userDisabledRules) disableRule(rule.id)
+                        if (rule.id in GraziConfig.get().userEnabledRules) enableRule(rule.id)
+                    }
 
-                // In case of English spellcheck will be done by Grazi spellchecker
-                if (lang.isEnglish()) {
-                    disableRules(allActiveRules.filter { it.isDictionaryBasedSpellingRule }.map { it.id })
+                    // In case of English spellcheck will be done by Grazi spellchecker
+                    if (lang.isEnglish()) {
+                        disableRules(allActiveRules.filter { it.isDictionaryBasedSpellingRule }.map { it.id })
+                    }
                 }
             }
         }
@@ -36,8 +38,10 @@ object LangTool : GraziStateLifecycle {
 
     override fun init(state: GraziConfig.State, project: Project) {
         for (lang in state.enabledLanguages) {
-            get(lang).allRules.distinctBy { it.id }.forEach { rule ->
-                rulesToLanguages.getOrPut(rule.id, ::HashSet).add(lang)
+            get(lang)?.let { tool ->
+                tool.allRules.distinctBy { it.id }.forEach { rule ->
+                    rulesToLanguages.getOrPut(rule.id, ::HashSet).add(lang)
+                }
             }
         }
     }

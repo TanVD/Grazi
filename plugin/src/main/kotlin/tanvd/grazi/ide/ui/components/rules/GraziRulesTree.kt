@@ -26,7 +26,7 @@ import javax.swing.tree.DefaultTreeModel
 
 class GraziRulesTree(selectionListener: (meta: Any) -> Unit) : Disposable {
     private val state = HashMap<String, RuleWithLang>()
-    private val langs = HashSet<Lang>(GraziConfig.get().enabledLanguages)
+    private val langs = HashSet(GraziConfig.get().enabledLanguages)
 
     fun addLang(lang: Lang) {
         langs.add(lang)
@@ -38,6 +38,7 @@ class GraziRulesTree(selectionListener: (meta: Any) -> Unit) : Disposable {
         update()
     }
 
+    @Suppress("EqualsOrHashCode")
     private class GraziTreeNode(userObject: Any? = null) : CheckedTreeNode(userObject) {
         override fun equals(other: Any?): Boolean {
             if (other is GraziTreeNode) {
@@ -68,7 +69,7 @@ class GraziRulesTree(selectionListener: (meta: Any) -> Unit) : Disposable {
                 }
             }
 
-            addCheckboxTreeListener(object : CheckboxTreeAdapter() {
+            addCheckboxTreeListener(object : CheckboxTreeListener {
                 override fun nodeStateChanged(node: CheckedTreeNode) {
                     val meta = node.userObject
                     if (meta is RuleWithLang) {
