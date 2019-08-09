@@ -1,4 +1,4 @@
-package tanvd.grazi.ide.ui.components
+package tanvd.grazi.ide.ui.components.langlist
 
 import com.intellij.openapi.actionSystem.ActionToolbarPosition
 import com.intellij.ui.*
@@ -32,9 +32,7 @@ class GraziAddDeleteListPanel(private val onLanguageAdded: (lang: Lang) -> Unit,
         add(decorator.createPanel(), BorderLayout.CENTER)
     }
 
-    override fun initPanel() {
-        // do nothing
-    }
+    override fun initPanel() {}
 
     override fun getListCellRenderer(): ListCellRenderer<*> = object : DefaultListCellRenderer() {
         override fun getListCellRendererComponent(list: JList<*>?, value: Any?, index: Int, isSelected: Boolean, cellHasFocus: Boolean): Component {

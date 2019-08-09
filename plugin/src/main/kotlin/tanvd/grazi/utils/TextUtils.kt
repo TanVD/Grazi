@@ -43,3 +43,4 @@ fun String.splitWithRanges(separators: List<Char>, insideOf: IntRange? = null, i
 }
 
 fun Regex.matches(char: Char) = this.matches(char.toString())
+

@@ -1,9 +1,7 @@
 package tanvd.grazi
 
 import com.intellij.testGuiFramework.fixtures.*
-import com.intellij.testGuiFramework.framework.RunWithIde
 import com.intellij.testGuiFramework.impl.*
-import com.intellij.testGuiFramework.launcher.ide.CommunityIde
 import com.intellij.ui.SearchTextField
 import org.fest.swing.exception.WaitTimedOutError
 import org.fest.swing.fixture.JTextComponentFixture
@@ -17,10 +15,6 @@ abstract class GraziGuiTestBase : GuiTestCase(false) {
 
     companion object {
         private val logger = LoggerFactory.getLogger(GraziGuiTestBase::class.java)
-
-        val langs = listOf("Chinese", "Dutch", "English (Canadian)", "English (GB)", "English (US)",
-                "French", "German (Austria)", "German (Germany)", "Greek", "Italian", "Japanese", "Persian", "Polish",
-                "Portuguese (Brazil)", "Portuguese (Portugal)", "Romanian", "Russian", "Slovak", "Spanish", "Ukrainian")
     }
 
     private fun waitForFirstIndexing() {
