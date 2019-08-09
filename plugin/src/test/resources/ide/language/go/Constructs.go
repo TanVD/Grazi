@@ -2,7 +2,7 @@ package example
 
 import "fmt"
 
-type <warning descr="MORFOLOGIK_RULE_EN_US">Struct</warning>With<warning descr="MORFOLOGIK_RULE_EN_US">Eror</warning> struct {
+type StructWith<warning descr="MORFOLOGIK_RULE_EN_US">Eror</warning> struct {
 	fieldWith<warning descr="MORFOLOGIK_RULE_EN_US">Eror</warning> string
 }
 

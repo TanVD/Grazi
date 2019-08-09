@@ -7,7 +7,7 @@ version = rootProject.version
 
 intellij {
     pluginName = "Grazi"
-    version = Versions.intellij
+    version = "LATEST-EAP-SNAPSHOT"
     downloadSources = true
     type = "IU"
 
@@ -17,13 +17,13 @@ intellij {
             "java",
             "markdown",
             "Kotlin",
-            "PythonCore:2019.2.192.5728.74",
+            "PythonCore:2019.2.192.6262.9",
             "org.rust.lang:0.2.101.2129-192",
             "nl.rubensten.texifyidea:0.6.6",
             "CSS",
             "JavaScriptLanguage",
             "properties",
-            "org.jetbrains.plugins.go:191.7479.19.213"
+            "org.jetbrains.plugins.go:192.6262.9.287"
     )
 }
 
