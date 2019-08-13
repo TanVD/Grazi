@@ -12,16 +12,22 @@ import com.intellij.spellchecker.tokenizer.TokenConsumer
 import com.intellij.util.Consumer
 import com.intellij.vcs.commit.message.CommitMessageInspectionProfile
 import com.intellij.vcs.commit.message.CommitMessageSpellCheckingInspection
-import org.languagetool.*
+import org.apache.commons.text.similarity.LevenshteinDistance
+import org.languagetool.JLanguageTool
+import org.languagetool.ResultCache
+import org.languagetool.UserConfig
+import org.languagetool.rules.Rule
 import tanvd.grazi.GraziConfig
 import tanvd.grazi.grammar.Typo
 import tanvd.grazi.ide.msg.GraziStateLifecycle
 import tanvd.grazi.language.Lang
-import tanvd.grazi.utils.*
+import tanvd.grazi.utils.Text
+import tanvd.grazi.utils.spellcheckOnly
+import tanvd.grazi.utils.toPointer
+import tanvd.grazi.utils.withOffset
 import tanvd.kex.buildSet
 import tanvd.kex.tryRun
 import java.util.concurrent.TimeUnit
-import kotlin.properties.Delegates
 
 
 object GraziSpellchecker : GraziStateLifecycle {
@@ -31,16 +37,17 @@ object GraziSpellchecker : GraziStateLifecycle {
 
     private val ignorePatters: List<(String) -> Boolean> = listOf(Text::isHiddenFile, Text::isURL, Text::isHtmlUnicodeSymbol, Text::isFilePath)
 
-    private fun createChecker(state: GraziConfig.State): JLanguageTool {
-        val cache = ResultCache(cacheMaxSize, cacheExpireAfterMinutes, TimeUnit.MINUTES)
-        // AMERICAN_ENGLISH must always be present
-        return JLanguageTool(checkerLang.jLanguage!!, state.nativeLanguage.jLanguage,
-                cache, UserConfig(state.userWords.toList())).apply {
-            disableRules(allRules.filter { !it.isDictionaryBasedSpellingRule }.map { it.id })
-        }
-    }
+    private var checkers: Set<Pair<JLanguageTool, Rule>> = emptySet()
+    private val levenshtein = LevenshteinDistance()
 
-    private var checker: JLanguageTool by Delegates.notNull()
+    private fun createCheckers(state: GraziConfig.State): Set<Pair<JLanguageTool, Rule>> = state.enabledLanguagesAvailable.plus(checkerLang)
+            .mapNotNull { lang ->
+                val cache = ResultCache(cacheMaxSize, cacheExpireAfterMinutes, TimeUnit.MINUTES)
+                val tool = JLanguageTool(lang.jLanguage, state.nativeLanguage.jLanguage,
+                        cache, UserConfig(state.userWords.toList()))
+                val checker = tool.allRules.find { it.isDictionaryBasedSpellingRule }
+                checker?.let { tool to checker }
+            }.toSet()
 
     private class GraziTokenConsumer(val project: Project, val language: Language) : TokenConsumer() {
         val result = HashSet<Typo>()
@@ -77,10 +84,20 @@ object GraziSpellchecker : GraziStateLifecycle {
      * Note, that casing and plural typos are ignored.
      */
     private fun check(word: String, project: Project, language: Language) = buildSet<Typo> {
-        val typo = tryRun { checker.check(word) }?.firstOrNull()?.let { Typo(it, checkerLang, 0) }
-        if (typo != null && IdeaSpellchecker.hasProblem(word, project, language)
-                && !isCasingProblem(word, typo) && !isPluralProblem(word, typo)) {
-            add(typo)
+        val typos = checkers.mapNotNull { (tool, checker) ->
+            tryRun { checker.match(tool.getAnalyzedSentence(word)) }?.firstOrNull()?.let { Typo(it, Lang[tool.language]!!, 0) }
+        }.filter { typo ->
+            !isCasingProblem(word, typo) && !isPluralProblem(word, typo) &&
+                    (IdeaSpellchecker.hasProblem(word, project, language) || !word.matches(Regex("\\p{IsLatin}+")))
+        }.toSet()
+
+        if (typos.size == checkers.size) {
+            typos.find { it.info.lang == checkerLang }?.let { typo ->
+                val fixes = mutableListOf<String>()
+                typos.flatMap(Typo::fixes).forEach { fixes.add(it) }
+                fixes.sortWith(Comparator { o1, o2 -> levenshtein.apply(o1, word).compareTo(levenshtein.apply(o2, word)) })
+                add(Typo(typo.location, typo.info, fixes))
+            }
         }
     }
 
@@ -89,7 +106,7 @@ object GraziSpellchecker : GraziStateLifecycle {
     private fun isPluralProblem(word: String, typo: Typo) = typo.fixes.any { "${it.toLowerCase()}s" == word.toLowerCase() }
 
     override fun init(state: GraziConfig.State, project: Project) {
-        checker = createChecker(state)
+        checkers = createCheckers(state)
 
         if (ApplicationManager.getApplication().isUnitTestMode || !state.enabledSpellcheck) return
 
@@ -104,7 +121,7 @@ object GraziSpellchecker : GraziStateLifecycle {
 
 
     override fun update(prevState: GraziConfig.State, newState: GraziConfig.State, project: Project) {
-        checker = createChecker(newState)
+        checkers = createCheckers(newState)
 
         if (ApplicationManager.getApplication().isUnitTestMode || prevState.enabledSpellcheck == newState.enabledSpellcheck) return
 

@@ -54,8 +54,6 @@ fun FlowOrPhrasingContent.toCorrectHtml(example: IncorrectExample) {
 
 object LangToolInstrumentation {
     fun registerLanguage(lang: Lang) {
-        if (lang in GraziConfig.get().enabledLanguagesAvailable) return
-
         val dynLanguages = Languages::class.java.getDeclaredField("dynLanguages")
         dynLanguages.isAccessible = true
 
