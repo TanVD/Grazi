@@ -15,6 +15,9 @@ import tanvd.grazi.grammar.Typo
 import tanvd.grazi.language.Lang
 import java.io.File
 import java.io.InputStream
+import java.lang.reflect.Field
+import java.lang.reflect.Modifier
+import java.util.regex.Pattern
 
 fun Iterable<Typo>.spellcheckOnly(): Set<Typo> = filter { it.isSpellingTypo }.toSet()
 val Typo.isSpellingTypo: Boolean
@@ -64,6 +67,24 @@ object Resources {
 }
 
 object LangToolInstrumentation {
+    fun enableLatinLettersInSpellchecker(lang: Lang) {
+        when (lang) {
+            Lang.RUSSIAN ->
+                Class.forName("org.languagetool.rules.ru.MorfologikRussianSpellerRule").getDeclaredField("RUSSIAN_LETTERS")
+            Lang.UKRAINIAN ->
+                Class.forName("org.languagetool.rules.uk.MorfologikUkrainianSpellerRule").getDeclaredField("UKRAINIAN_LETTERS")
+            else -> null
+        }?.let { pattern ->
+            pattern.isAccessible = true
+
+            val mods = Field::class.java.getDeclaredField("modifiers")
+            mods.isAccessible = true
+            mods.setInt(pattern, pattern.modifiers and Modifier.FINAL.inv())
+
+            pattern.set(null, Pattern.compile(".*"))
+        }
+    }
+
     fun registerLanguage(lang: Lang) {
         if (lang in GraziConfig.get().enabledLanguagesAvailable) return
 

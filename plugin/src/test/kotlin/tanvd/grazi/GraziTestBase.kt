@@ -24,13 +24,13 @@ abstract class GraziTestBase(private val withSpellcheck: Boolean) : LightJavaCod
         super.setUp()
         myFixture.enableInspections(*inspectionTools)
 
-        GraziConfig.update { it.copy(enabledSpellcheck = withSpellcheck) }
+        GraziConfig.update {  state ->
+            state.update(enabledLanguages = state.enabledLanguages + Lang.RUSSIAN + Lang.GERMANY_GERMAN, enabledSpellcheck = withSpellcheck)
+        }
 
         while (ApplicationManager.getApplication().messageBus.hasUndeliveredEvents(GraziStateLifecycle.topic)) {
             Thread.sleep(500)
         }
-
-        GraziConfig.update { it.copy(enabledLanguages = it.enabledLanguages + Lang.RUSSIAN) }
     }
 
     override fun getProjectDescriptor(): LightProjectDescriptor {

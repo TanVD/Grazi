@@ -5,6 +5,7 @@ import org.languagetool.Language
 import tanvd.grazi.GraziBundle
 import tanvd.grazi.GraziPlugin
 import tanvd.grazi.remote.RemoteLangDescriptor
+import tanvd.grazi.utils.LangToolInstrumentation
 
 @Suppress("unused")
 enum class Lang(val displayName: String, val shortCode: String, private val className: String, val descriptor: RemoteLangDescriptor,
@@ -20,8 +21,8 @@ enum class Lang(val displayName: String, val shortCode: String, private val clas
     RUSSIAN("Russian", "ru", "Russian", RemoteLangDescriptor.RUSSIAN, GraziBundle.langConfig("ru.rules.enabled")),
     PERSIAN("Persian", "fa", "Persian", RemoteLangDescriptor.PERSIAN),
     FRENCH("French", "fr", "French", RemoteLangDescriptor.FRENCH),
-    GERMANY_GERMAN("German (Germany)", "de", "GermanyGerman", RemoteLangDescriptor.GERMAN),
-    AUSTRIAN_GERMAN("German (Austria)", "de", "AustrianGerman", RemoteLangDescriptor.GERMAN),
+    GERMANY_GERMAN("German (Germany)", "de", "GermanyGerman", RemoteLangDescriptor.GERMAN, disabledCategories = GraziBundle.langConfig("de.categories.disabled")),
+    AUSTRIAN_GERMAN("German (Austria)", "de", "AustrianGerman", RemoteLangDescriptor.GERMAN, disabledCategories = GraziBundle.langConfig("de.categories.disabled")),
     POLISH("Polish", "pl", "Polish", RemoteLangDescriptor.POLISH),
     ITALIAN("Italian", "it", "Italian", RemoteLangDescriptor.ITALIAN),
     DUTCH("Dutch", "nl", "Dutch", RemoteLangDescriptor.DUTCH),
@@ -47,6 +48,8 @@ enum class Lang(val displayName: String, val shortCode: String, private val clas
         get() {
             if (_jLanguage == null) {
                 _jLanguage = GraziPlugin.loadClass("org.languagetool.language.$className")?.newInstance() as Language?
+
+                if (_jLanguage != null) LangToolInstrumentation.enableLatinLettersInSpellchecker(this)
             }
 
             return _jLanguage
@@ -61,8 +64,10 @@ enum class Lang(val displayName: String, val shortCode: String, private val clas
             tool.enableRule(it.id)
         }
 
+        // disable all spellchecker rules also (use them directly in GraziSpellchecker)
         tool.allRules.filter { rule ->
-            disabledRules.any { rule.id.contains(it) } || disabledCategories.any { rule.category.id.toString().contains(it) }
+            rule.isDictionaryBasedSpellingRule || disabledRules.any { rule.id.contains(it) }
+                    || disabledCategories.any { rule.category.id.toString().contains(it) }
         }.forEach {
             tool.disableRule(it.id)
         }
