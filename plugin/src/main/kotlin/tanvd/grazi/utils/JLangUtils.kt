@@ -9,14 +9,11 @@ import org.languagetool.rules.ExampleSentence
 import org.languagetool.rules.IncorrectExample
 import org.languagetool.rules.Rule
 import org.languagetool.rules.RuleMatch
-import tanvd.grazi.GraziConfig
 import tanvd.grazi.GraziPlugin
 import tanvd.grazi.grammar.Typo
 import tanvd.grazi.language.Lang
 import java.io.File
 import java.io.InputStream
-import java.lang.reflect.Field
-import java.lang.reflect.Modifier
 import java.util.regex.Pattern
 
 fun Iterable<Typo>.spellcheckOnly(): Set<Typo> = filter { it.isSpellingTypo }.toSet()
@@ -67,27 +64,13 @@ object Resources {
 }
 
 object LangToolInstrumentation {
-    fun enableLatinLettersInSpellchecker(lang: Lang) {
-        when (lang) {
-            Lang.RUSSIAN ->
-                Class.forName("org.languagetool.rules.ru.MorfologikRussianSpellerRule").getDeclaredField("RUSSIAN_LETTERS")
-            Lang.UKRAINIAN ->
-                Class.forName("org.languagetool.rules.uk.MorfologikUkrainianSpellerRule").getDeclaredField("UKRAINIAN_LETTERS")
-            else -> null
-        }?.let { pattern ->
-            pattern.isAccessible = true
-
-            val mods = Field::class.java.getDeclaredField("modifiers")
-            mods.isAccessible = true
-            mods.setInt(pattern, pattern.modifiers and Modifier.FINAL.inv())
-
-            pattern.set(null, Pattern.compile(".*"))
-        }
-    }
+    fun enableLatinLettersInSpellchecker(lang: Lang) = when (lang) {
+        Lang.RUSSIAN -> "org.languagetool.rules.ru.MorfologikRussianSpellerRule" to "RUSSIAN_LETTERS"
+        Lang.UKRAINIAN -> "org.languagetool.rules.uk.MorfologikUkrainianSpellerRule" to "UKRAINIAN_LETTERS"
+        else -> null
+    }?.let { (cls, field) -> Class.forName(cls).setFinalStaticField(field, Pattern.compile(".*")) }
 
     fun registerLanguage(lang: Lang) {
-        if (lang in GraziConfig.get().enabledLanguagesAvailable) return
-
         val langs = Languages::class.java.getStaticField<MutableList<Language>>("dynLanguages")
 
         lang.descriptor.langsClasses.forEach { className ->
