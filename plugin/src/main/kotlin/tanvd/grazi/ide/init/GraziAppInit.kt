@@ -9,6 +9,8 @@ import tanvd.grazi.ide.GraziInspection
 import tanvd.grazi.ide.msg.GraziStateLifecycle
 import tanvd.grazi.language.LangTool
 import tanvd.grazi.spellcheck.GraziSpellchecker
+import tanvd.grazi.utils.LangToolInstrumentation
+
 
 class GraziAppInit : BaseComponent, DumbAware {
     override fun initComponent() {
@@ -16,5 +18,7 @@ class GraziAppInit : BaseComponent, DumbAware {
         GraziStateLifecycle.topic.subscribe(ApplicationManager.getApplication(), GraziSpellchecker)
         GraziStateLifecycle.topic.subscribe(ApplicationManager.getApplication(), GraziInspection)
         GraziStateLifecycle.topic.subscribe(ApplicationManager.getApplication(), GraziCommitInspection)
+
+        LangToolInstrumentation.reloadEnglish()
     }
 }
