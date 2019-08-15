@@ -51,9 +51,13 @@ dependencies {
     testRuntime("org.languagetool", "language-de", Versions.languageTool)
 
     // for PyCharm and others no Intellij Idea applications
-    aetherDependencies()
+    //aetherDependencies()
 
-    compile("org.jetbrains.kotlinx", "kotlinx-html-jvm", "0.6.11")
+    compile("org.jetbrains.kotlinx", "kotlinx-html-jvm", "0.6.11") {
+        exclude("org.jetbrains.kotlin", "kotlin-stdlib")
+        exclude("org.jetbrains.kotlin", "kotlin-stdlib-common")
+        exclude("org.jetbrains", "annotations")
+    }
 
     compile("org.apache.commons", "commons-lang3", "3.5")
 
