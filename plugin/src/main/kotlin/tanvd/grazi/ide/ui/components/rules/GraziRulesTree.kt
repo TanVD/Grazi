@@ -1,8 +1,6 @@
 package tanvd.grazi.ide.ui.components.rules
 
-import com.intellij.ui.CheckboxTree
-import com.intellij.ui.CheckboxTreeListener
-import com.intellij.ui.CheckedTreeNode
+import com.intellij.ui.*
 import tanvd.grazi.GraziConfig
 import tanvd.grazi.language.Lang
 import tanvd.grazi.language.LangTool
