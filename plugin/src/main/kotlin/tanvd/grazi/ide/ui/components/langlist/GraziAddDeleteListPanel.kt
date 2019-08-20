@@ -13,8 +13,7 @@ import java.awt.BorderLayout
 import java.awt.Component
 import javax.swing.*
 
-
-class GraziAddDeleteListPanel(private val onLanguageAdded: (lang: Lang) -> Unit, private val onLanguageRemoved: (lang: Lang) -> Unit) :
+class GraziAddDeleteListPanel(private val download: (Lang) -> Boolean, private val onLanguageAdded: (lang: Lang) -> Unit, private val onLanguageRemoved: (lang: Lang) -> Unit) :
         AddDeleteListPanel<Lang>(null, GraziConfig.get().enabledLanguages.sortedWith(Comparator.comparing(Lang::displayName))) {
     private val decorator: ToolbarDecorator =
             @Suppress("UNCHECKED_CAST")
@@ -53,9 +52,11 @@ class GraziAddDeleteListPanel(private val onLanguageAdded: (lang: Lang) -> Unit,
     }
 
     override fun findItemToAdd(): Lang? {
-        val langsInList = listItems.map { it as Lang }.toSet()
-        val (downloadedLangs, otherLangs) = Lang.sortedValues().filter { it !in langsInList }.partition { it.jLanguage != null }
-        val step = GraziListPopupStep(msg("grazi.ui.settings.language.dialog.title"), downloadedLangs, otherLangs, this, ::addElement)
+        // remove already enabled languages and their dialects
+        val langsInList = listItems.map { (it as Lang).shortCode }.toSet()
+        val (downloadedLangs, otherLangs) = Lang.sortedValues().filter { it.shortCode !in langsInList }.partition { it.jLanguage != null }
+
+        val step = GraziListPopupStep(msg("grazi.ui.settings.language.popup.title"), downloadedLangs, otherLangs, download, ::addElement)
         val menu = object : ListPopupImpl(null, step) {
             override fun getListElementRenderer() = GraziPopupListElementRenderer(this)
         }
@@ -64,11 +65,11 @@ class GraziAddDeleteListPanel(private val onLanguageAdded: (lang: Lang) -> Unit,
         return null
     }
 
-    fun reset(settings: GraziConfig) {
+    fun reset(langs: Iterable<Lang>) {
         val model = myList.model as DefaultListModel<Lang>
         model.elements().asSequence().forEach(onLanguageRemoved)
         model.clear()
-        settings.state.enabledLanguages.sortedWith(Comparator.comparing(Lang::displayName)).forEach(::addElement)
+        langs.forEach(::addElement)
     }
 
     private class GraziListToolbarDecorator(val list: JList<Any>) : ToolbarDecorator() {

@@ -10,15 +10,13 @@ import tanvd.grazi.utils.isInjectedFragment
 abstract class LanguageSupport(private val disabledRules: Set<String> = emptySet()) : LanguageExtensionPoint<LanguageSupport>() {
     companion object : LanguageExtension<LanguageSupport>("tanvd.grazi.languageSupport")
 
-    open fun isRelevant(element: PsiElement): Boolean = true
+    abstract fun isRelevant(element: PsiElement): Boolean
 
     fun getTypos(element: PsiElement): Set<Typo> = check(element)
             .asSequence()
             .filterNot { it.info.rule.id in disabledRules }
             .filter {
-                it.location.element?.let { gotElement ->
-                    !gotElement.isInjectedFragment() && isAncestor(element, gotElement, false)
-                } ?: false
+                it.location.element?.let { gotElement -> isAncestor(element, gotElement, false) } ?: false
             }.toSet()
 
     /** Don't forget to use ProgressManager.checkCancelled() */

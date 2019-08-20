@@ -7,24 +7,17 @@ import tanvd.grazi.GraziBundle
 import tanvd.grazi.grammar.GrammarChecker
 import tanvd.grazi.grammar.Typo
 import tanvd.grazi.ide.language.LanguageSupport
-import tanvd.grazi.utils.withOffset
 
 class JStringSupport : LanguageSupport(GraziBundle.langConfig("global.literal_string.disabled")) {
     override fun isRelevant(element: PsiElement): Boolean {
-        return element is PsiLiteralExpressionImpl && (element.literalElementType == JavaTokenType.STRING_LITERAL && element.innerText != null)
+        return element is PsiLiteralExpressionImpl && (element.literalElementType == JavaTokenType.STRING_LITERAL)
     }
 
     override fun check(element: PsiElement): Set<Typo> {
         require(element is PsiLiteralExpressionImpl) { "Got non PsiLiteralExpressionImpl in JStringSupport" }
 
         return when (element.literalElementType) {
-            JavaTokenType.STRING_LITERAL -> {
-                GrammarChecker.default.check(element, getText = { it.innerText!! }).map { typo ->
-                    val typoElement = typo.location.pointer?.element!!
-                    val indexStart = typoElement.text.indexOf((typoElement as PsiLiteralExpressionImpl).innerText!!)
-                    typo.copy(location = typo.location.copy(range = typo.location.range.withOffset(indexStart)))
-                }.toSet()
-            }
+            JavaTokenType.STRING_LITERAL -> GrammarChecker.default.check(element)
             else -> emptySet()
         }
     }

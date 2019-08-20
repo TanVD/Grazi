@@ -1,8 +1,6 @@
 package tanvd.grazi.remote
 
-import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.ProjectManager
 import tanvd.grazi.GraziConfig
 import tanvd.grazi.GraziPlugin
 import tanvd.grazi.ide.ui.components.dsl.msg
@@ -23,17 +21,5 @@ object GraziRemote {
     }
 
     /** Downloads all missing languages to local storage*/
-    fun downloadMissing(project: Project?) {
-        val state = GraziConfig.get()
-
-        if (state.hasMissedLanguages()) {
-            state.enabledLanguages.filter { it.jLanguage == null }.forEach {
-                LangDownloader.download(it, project)
-            }
-
-            if (state.nativeLanguage.jLanguage == null) {
-                LangDownloader.download(state.nativeLanguage, project)
-            }
-        }
-    }
+    fun downloadMissing(project: Project?) = GraziConfig.get().missedLanguages.forEach { LangDownloader.download(it, project) }
 }

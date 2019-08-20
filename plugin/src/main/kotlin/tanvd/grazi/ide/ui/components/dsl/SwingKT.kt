@@ -1,5 +1,6 @@
 package tanvd.grazi.ide.ui.components.dsl
 
+import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.ui.panel.ComponentPanelBuilder
 import com.intellij.ui.IdeBorderFactory
 import com.intellij.util.ui.UIUtil
@@ -30,3 +31,5 @@ fun pane() = JEditorPane().apply {
     border = null
     background = null
 }
+
+fun actionGroup(body: DefaultActionGroup.() -> Unit) = DefaultActionGroup().apply(body)

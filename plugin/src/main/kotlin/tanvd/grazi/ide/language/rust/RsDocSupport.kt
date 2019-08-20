@@ -11,18 +11,19 @@ import tanvd.kex.ifTrue
 class RsDocSupport : LanguageSupport() {
     companion object {
         //TODO-tanvd@undin Poor solution, but for better need support of Rust team
-        private val checker = GrammarChecker(GrammarChecker.ignoringQuotes,
-                ignoreChar = linkedSetOf({ _, cur -> cur == '/' }, { _, cur -> cur == '\"' }),
-                replaceChar = linkedSetOf({ prev, cur ->
+        private val checker = GrammarChecker(GrammarChecker.default, GrammarChecker.CharRules(
+                ignore = linkedSetOf({ _, cur -> cur == '/' }, { _, cur -> cur == '\"' }),
+                replace = linkedSetOf({ prev, cur ->
                     (cur == '#' && !prev.endsWith('#')).ifTrue { '\n' }
-                }))
+                })))
     }
 
     override fun isRelevant(element: PsiElement) = element is RsDocCommentImpl
 
     override fun check(element: PsiElement): Set<Typo> {
         require(element is RsDocCommentImpl) { "Got not RsDocCommentImpl in a RsDocSupport" }
+
         val ranges = findDoctestInjectableRanges(element).flatten().toList()
-        return checker.check(element, indexBasedIgnore = { _, index -> ranges.any { it.contains(index) } })
+        return checker.check(element, tokenRules = GrammarChecker.TokenRules(ignoreByIndex = linkedSetOf({ _, index -> ranges.any { range -> index in range } })))
     }
 }

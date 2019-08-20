@@ -5,15 +5,10 @@ import kotlinx.html.strong
 import org.jetbrains.org.objectweb.asm.*
 import org.languagetool.Language
 import org.languagetool.Languages
-import org.languagetool.rules.ExampleSentence
-import org.languagetool.rules.IncorrectExample
-import org.languagetool.rules.Rule
-import org.languagetool.rules.RuleMatch
+import org.languagetool.rules.*
 import tanvd.grazi.GraziPlugin
 import tanvd.grazi.grammar.Typo
 import tanvd.grazi.language.Lang
-import java.io.File
-import java.io.InputStream
 import java.util.regex.Pattern
 
 fun Iterable<Typo>.spellcheckOnly(): Set<Typo> = filter { it.isSpellingTypo }.toSet()
@@ -58,11 +53,6 @@ fun FlowOrPhrasingContent.toCorrectHtml(example: IncorrectExample) {
     }
 }
 
-object Resources {
-    fun getFile(file: String): File = File(GraziPlugin::class.java.getResource(file).file)
-    fun getStream(file: String): InputStream = GraziPlugin::class.java.getResourceAsStream(file)
-}
-
 object LangToolInstrumentation {
     fun enableLatinLettersInSpellchecker(lang: Lang) = when (lang) {
         Lang.RUSSIAN -> "org.languagetool.rules.ru.MorfologikRussianSpellerRule" to "RUSSIAN_LETTERS"
@@ -86,8 +76,8 @@ object LangToolInstrumentation {
         val writer = ClassWriter(ClassWriter.COMPUTE_MAXS)
         reader.accept(EnglishChunkerInstrumentation(writer), 0)
 
-        val cls = writer.toByteArray()
-        GraziPlugin.classLoader.defineClass("org.languagetool.language.English", cls, 0, cls.size)
+        val klass = writer.toByteArray()
+        GraziPlugin.classLoader.defineClass("org.languagetool.language.English", klass, 0, klass.size)
     }
 
     private class EnglishChunkerInstrumentation(val classVisitor: ClassVisitor) : ClassVisitor(Opcodes.ASM5, classVisitor) {

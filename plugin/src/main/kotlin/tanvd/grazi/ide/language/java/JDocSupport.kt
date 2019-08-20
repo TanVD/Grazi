@@ -1,6 +1,5 @@
 package tanvd.grazi.ide.language.java
 
-
 import com.intellij.psi.JavaDocTokenType
 import com.intellij.psi.PsiElement
 import com.intellij.psi.javadoc.*
@@ -28,10 +27,12 @@ class JDocSupport : LanguageSupport() {
      * Note: Tag lines ignores casing.
      */
     override fun check(element: PsiElement) = buildSet<Typo> {
+        require(element is PsiDocComment) { "Got non PsiDocComment in JDocSupport" }
+
         val allDocTokens = element.filterFor<PsiDocToken> { it.tokenType == JavaDocTokenType.DOC_COMMENT_DATA }
 
         addAll(GrammarChecker.default.check(allDocTokens.filterNot { isTag(it) }))
         addAll(GrammarChecker.default.check(allDocTokens.filter { isTag(it) && !isCodeTag(it) })
-                .filter { it.info.category !in tagsIgnoredCategories })
+                .filterNot { it.info.category in tagsIgnoredCategories })
     }
 }
