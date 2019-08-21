@@ -20,6 +20,12 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <h4>2019.2-5</h4>
+    <ul>
+        <li>Reduce plugin size</li>
+        <li>Major performance improvements</li>
+        <li>Bugfixes for language detection</li>
+    </ul>
     <h4>2019.2-4</h4>
     <ul>
         <li>Fixes for UI</li>
