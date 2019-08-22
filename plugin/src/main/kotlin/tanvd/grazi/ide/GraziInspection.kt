@@ -9,6 +9,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 import tanvd.grazi.GraziConfig
 import tanvd.grazi.grammar.Typo
+import tanvd.grazi.ide.fus.GraziFUCounterCollector
 import tanvd.grazi.ide.language.LanguageSupport
 import tanvd.grazi.ide.msg.GraziStateLifecycle
 import tanvd.grazi.spellcheck.GraziSpellchecker
@@ -34,11 +35,19 @@ class GraziInspection : LocalInspectionTool() {
 
                 val typos = HashSet<Typo>()
                 for (ext in LanguageSupport.allForLanguageOrAny(element.language).filter { it.isRelevant(element) }) {
-                    typos.addAll(ext.getTypos(element))
+                    typos.addAll(ext.getTypos(element).onEach {
+                        if (isOnTheFly) {
+                            GraziFUCounterCollector.logTypo(it, false)
+                        }
+                    })
                 }
 
                 if (GraziConfig.get().enabledSpellcheck) {
-                    typos.addAll(GraziSpellchecker.getTypos(element))
+                    typos.addAll(GraziSpellchecker.getTypos(element).onEach {
+                        if (isOnTheFly) {
+                            GraziFUCounterCollector.logTypo(it, true)
+                        }
+                    })
                 }
 
                 typos.map { GraziProblemDescriptor(it, isOnTheFly) }.forEach {

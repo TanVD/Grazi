@@ -6,6 +6,7 @@ import com.optimaize.langdetect.LanguageDetectorBuilder
 import com.optimaize.langdetect.ngram.NgramExtractors
 import com.optimaize.langdetect.profiles.LanguageProfileReader
 import tanvd.grazi.GraziConfig
+import tanvd.grazi.ide.fus.GraziFUCounterCollector
 import tanvd.grazi.ide.msg.GraziStateLifecycle
 
 object LangDetector : GraziStateLifecycle {
@@ -16,6 +17,7 @@ object LangDetector : GraziStateLifecycle {
     fun getLang(text: String) = detector?.getProbabilities(text.take(charsForLangDetection))
             ?.maxBy { it.probability }
             ?.let { detectedLanguage -> languages.find { it.shortCode == detectedLanguage.locale.language } }
+            .also { GraziFUCounterCollector.logLanguageDetectionResult(it) }
 
     override fun init(state: GraziConfig.State, project: Project) {
         languages = state.availableLanguages
