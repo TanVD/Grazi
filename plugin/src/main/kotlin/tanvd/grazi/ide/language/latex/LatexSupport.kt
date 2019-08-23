@@ -20,9 +20,5 @@ class LatexSupport : LanguageSupport() {
 
     override fun isRelevant(element: PsiElement) = element is LatexNormalText && element.isNotInMathEnvironment() && element.isNotInSquareBrackets()
 
-    override fun check(element: PsiElement): Set<Typo> {
-        require(element is LatexNormalText) { "Got non LatexNormalText in LatexSupport" }
-
-        return GrammarChecker.default.check(element).filterNotToSet { typo -> typo.location.isAtStart() || typo.location.isAtEnd() }
-    }
+    override fun check(element: PsiElement) = GrammarChecker.default.check(element).filterNotToSet { typo -> typo.location.isAtStart() || typo.location.isAtEnd() }
 }
