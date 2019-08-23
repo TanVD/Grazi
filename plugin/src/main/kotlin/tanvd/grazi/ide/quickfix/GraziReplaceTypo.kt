@@ -19,6 +19,7 @@ import icons.SpellcheckerIcons
 import tanvd.grazi.grammar.Typo
 import tanvd.grazi.ide.fus.GraziFUCounterCollector
 import tanvd.grazi.ide.ui.components.dsl.msg
+import tanvd.grazi.utils.isSpellingTypo
 import tanvd.grazi.utils.toAbsoluteSelectionRange
 import tanvd.kex.trimToNull
 import javax.swing.Icon
@@ -48,11 +49,11 @@ class GraziReplaceTypo(private val typo: Typo) : LocalQuickFix, Iconable, Priori
             LookupManager.getInstance(project).showLookup(editor, *items.toTypedArray())?.apply {
                 addLookupListener(object : LookupListener {
                     override fun lookupCanceled(event: LookupEvent) {
-                        GraziFUCounterCollector.logQuickFixResult(typo.info.rule.id, cancelled = true, isSpellcheck = false)
+                        GraziFUCounterCollector.logQuickFixResult(typo.info.rule.id, cancelled = true, isSpellcheck = typo.isSpellingTypo)
                     }
 
                     override fun itemSelected(event: LookupEvent) {
-                        GraziFUCounterCollector.logQuickFixResult(typo.info.rule.id, cancelled = false, isSpellcheck = false)
+                        GraziFUCounterCollector.logQuickFixResult(typo.info.rule.id, cancelled = false, isSpellcheck = typo.isSpellingTypo)
                     }
                 })
             }
