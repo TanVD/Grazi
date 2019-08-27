@@ -17,21 +17,21 @@ class GraziProblemDescriptor(val fix: Typo, isOnTheFly: Boolean) : ProblemDescri
     companion object {
         private fun Typo.toFixes(isOnTheFly: Boolean) = buildList<LocalQuickFix> {
             if (info.rule.isDictionaryBasedSpellingRule) {
-                add(GraziAddWord(this@toFixes))
+                add(GraziAddWordQuickFix(this@toFixes))
             }
 
             if (fixes.isNotEmpty() && isOnTheFly) {
                 if (location.shouldUseRename) {
-                    add(GraziRenameTypo(this@toFixes))
+                    add(GraziRenameTypoQuickFix(this@toFixes))
                 } else {
                     GraziFUCounterCollector.logTypo(this@toFixes, isSpellingTypo)
-                    add(GraziReplaceTypo(this@toFixes))
+                    add(GraziReplaceTypoQuickFix(this@toFixes))
                 }
             }
 
             // disable spelling rule will not affect anything
             if (!isSpellingTypo) {
-                add(GraziDisableRule(this@toFixes))
+                add(GraziDisableRuleQuickFix(this@toFixes))
             }
         }
 
