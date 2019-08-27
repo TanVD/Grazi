@@ -1,10 +1,7 @@
 package tanvd.grazi.ide.quickfix
 
 import com.intellij.codeInsight.intention.PriorityAction
-import com.intellij.codeInsight.lookup.LookupElementBuilder
-import com.intellij.codeInsight.lookup.LookupEvent
-import com.intellij.codeInsight.lookup.LookupListener
-import com.intellij.codeInsight.lookup.LookupManager
+import com.intellij.codeInsight.lookup.*
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.ide.DataManager
@@ -46,17 +43,19 @@ class GraziReplaceTypo(private val typo: Typo) : LocalQuickFix, Iconable, Priori
             editor.selectionModel.setSelection(selectionRange.startOffset, min(selectionRange.endOffset, editor.document.textLength))
 
             val items = typo.fixes.map { LookupElementBuilder.create(it) }
-            LookupManager.getInstance(project).showLookup(editor, *items.toTypedArray())?.apply {
-                addLookupListener(object : LookupListener {
-                    override fun lookupCanceled(event: LookupEvent) {
-                        GraziFUCounterCollector.logQuickFixResult(typo.info.rule.id, cancelled = true, isSpellcheck = typo.isSpellingTypo)
-                    }
-
-                    override fun itemSelected(event: LookupEvent) {
-                        GraziFUCounterCollector.logQuickFixResult(typo.info.rule.id, cancelled = false, isSpellcheck = typo.isSpellingTypo)
-                    }
-                })
-            }
+            LookupManager.getInstance(project).showLookup(editor, *items.toTypedArray())?.registerFUCollector(typo)
         }
+    }
+
+    private fun LookupEx.registerFUCollector(typo: Typo) {
+        addLookupListener(object : LookupListener {
+            override fun lookupCanceled(event: LookupEvent) {
+                GraziFUCounterCollector.logQuickFixResult(typo.info.rule.id, cancelled = true, isSpellcheck = typo.isSpellingTypo)
+            }
+
+            override fun itemSelected(event: LookupEvent) {
+                GraziFUCounterCollector.logQuickFixResult(typo.info.rule.id, cancelled = false, isSpellcheck = typo.isSpellingTypo)
+            }
+        })
     }
 }
