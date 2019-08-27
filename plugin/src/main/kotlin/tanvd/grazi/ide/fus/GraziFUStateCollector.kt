@@ -16,7 +16,7 @@ class GraziFUStateCollector : ApplicationUsagesCollector() {
         val state = GraziConfig.get()
         val default = GraziConfig.State()
 
-        state.enabledLanguages.filter { it !in default.enabledLanguages }.forEach {
+        state.enabledLanguages.forEach {
             metrics.add(newMetric("language", it.shortCode))
         }
 

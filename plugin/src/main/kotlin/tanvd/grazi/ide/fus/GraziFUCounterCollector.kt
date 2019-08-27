@@ -10,8 +10,8 @@ object GraziFUCounterCollector {
             .logEvent("grazi", eventId, FeatureUsageData().apply(body))
 
     fun logLanguageDetectionResult(lang: Lang?) = log("detection") {
-            addData("language", lang?.shortCode ?: "")
-        }
+        addData("language", lang?.shortCode ?: "")
+    }
 
     fun logTypo(typo: Typo, isSpellcheck: Boolean) = log("typo") {
         addData("id", typo.info.rule.id)

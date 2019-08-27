@@ -9,12 +9,10 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 import tanvd.grazi.GraziConfig
 import tanvd.grazi.grammar.Typo
-import tanvd.grazi.ide.fus.GraziFUCounterCollector
 import tanvd.grazi.ide.language.LanguageSupport
 import tanvd.grazi.ide.msg.GraziStateLifecycle
 import tanvd.grazi.spellcheck.GraziSpellchecker
 import tanvd.grazi.utils.isInjectedFragment
-import tanvd.grazi.utils.isSpellingTypo
 
 class GraziInspection : LocalInspectionTool() {
     companion object : GraziStateLifecycle {
