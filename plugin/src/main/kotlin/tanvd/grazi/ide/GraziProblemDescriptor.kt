@@ -24,7 +24,7 @@ class GraziProblemDescriptor(val fix: Typo, isOnTheFly: Boolean) : ProblemDescri
                 if (location.shouldUseRename) {
                     add(GraziRenameTypoQuickFix(this@toFixes))
                 } else {
-                    GraziFUCounterCollector.logTypo(this@toFixes, isSpellingTypo)
+                    GraziFUCounterCollector.typoFound(this@toFixes)
                     add(GraziReplaceTypoQuickFix(this@toFixes))
                 }
             }

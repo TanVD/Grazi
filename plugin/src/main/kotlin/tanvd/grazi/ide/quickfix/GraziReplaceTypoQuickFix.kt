@@ -50,11 +50,11 @@ class GraziReplaceTypoQuickFix(private val typo: Typo) : LocalQuickFix, Iconable
     private fun LookupEx.registerFUCollector(typo: Typo) {
         addLookupListener(object : LookupListener {
             override fun lookupCanceled(event: LookupEvent) {
-                GraziFUCounterCollector.logQuickFixResult(typo.info.rule.id, cancelled = true, isSpellcheck = typo.isSpellingTypo)
+                GraziFUCounterCollector.quickfixApplied(typo.info.rule.id, cancelled = true, isSpellcheck = typo.isSpellingTypo)
             }
 
             override fun itemSelected(event: LookupEvent) {
-                GraziFUCounterCollector.logQuickFixResult(typo.info.rule.id, cancelled = false, isSpellcheck = typo.isSpellingTypo)
+                GraziFUCounterCollector.quickfixApplied(typo.info.rule.id, cancelled = false, isSpellcheck = typo.isSpellingTypo)
             }
         })
     }

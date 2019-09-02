@@ -17,7 +17,7 @@ object LangDetector : GraziStateLifecycle {
     fun getLang(text: String) = detector?.getProbabilities(text.take(charsForLangDetection))
             ?.maxBy { it.probability }
             ?.let { detectedLanguage -> languages.find { it.shortCode == detectedLanguage.locale.language } }
-            .also { GraziFUCounterCollector.logLanguageDetectionResult(it) }
+            .also { GraziFUCounterCollector.languageDetected(it) }
 
     override fun init(state: GraziConfig.State, project: Project) {
         languages = state.availableLanguages

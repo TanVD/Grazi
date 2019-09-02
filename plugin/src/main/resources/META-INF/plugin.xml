@@ -97,6 +97,7 @@
         <search.optionContributor implementation="tanvd.grazi.ide.ui.GraziSearchableOptionContributor"/>
 
         <statistics.applicationUsagesCollector implementation="tanvd.grazi.ide.fus.GraziFUStateCollector"/>
+        <statistics.validation.customWhiteListRule implementation="tanvd.grazi.ide.fus.GraziWhiteListRule"/>
         <statistics.counterUsagesCollector groupId="grazi" version="1"/>
     </extensions>
 

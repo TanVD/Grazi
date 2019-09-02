@@ -4,24 +4,24 @@ import com.intellij.internal.statistic.eventLog.FeatureUsageData
 import com.intellij.internal.statistic.service.fus.collectors.FUCounterUsageLogger
 import tanvd.grazi.grammar.Typo
 import tanvd.grazi.language.Lang
+import tanvd.grazi.utils.isSpellingTypo
 
 object GraziFUCounterCollector {
-    private fun log(eventId: String, body: FeatureUsageData.() -> Unit) = FUCounterUsageLogger.getInstance()
-            .logEvent("grazi", eventId, FeatureUsageData().apply(body))
-
-    fun logLanguageDetectionResult(lang: Lang?) = log("detection") {
+    fun languageDetected(lang: Lang?) = log("language.detected") {
         addData("language", lang?.shortCode ?: "")
     }
 
-    fun logTypo(typo: Typo, isSpellcheck: Boolean) = log("typo") {
+    fun typoFound(typo: Typo) = log("typo.found") {
         addData("id", typo.info.rule.id)
         addData("fixes", typo.fixes.size)
-        addData("spellcheck", isSpellcheck)
+        addData("spellcheck", typo.isSpellingTypo)
     }
 
-    fun logQuickFixResult(ruleId: String, cancelled: Boolean, isSpellcheck: Boolean) = log("quickfix") {
+    fun quickfixApplied(ruleId: String, cancelled: Boolean, isSpellcheck: Boolean) = log("quickfix.applied") {
         addData("id", ruleId)
         addData("cancelled", cancelled)
         addData("spellcheck", isSpellcheck)
     }
+
+    private fun log(eventId: String, body: FeatureUsageData.() -> Unit) = FUCounterUsageLogger.getInstance().logEvent("grazi", eventId, FeatureUsageData().apply(body))
 }
