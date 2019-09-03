@@ -7,7 +7,7 @@ import tanvd.grazi.GraziConfig
 
 @Suppress("MissingRecentApi")
 class GraziFUStateCollector : ApplicationUsagesCollector() {
-    override fun getGroupId(): String = "grazi"
+    override fun getGroupId(): String = "grazi.state"
     override fun getVersion(): Int = 1
 
     override fun getMetrics(): Set<MetricEvent> {

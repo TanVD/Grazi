@@ -23,5 +23,5 @@ object GraziFUCounterCollector {
         addData("spellcheck", isSpellcheck)
     }
 
-    private fun log(eventId: String, body: FeatureUsageData.() -> Unit) = FUCounterUsageLogger.getInstance().logEvent("grazi", eventId, FeatureUsageData().apply(body))
+    private fun log(eventId: String, body: FeatureUsageData.() -> Unit) = FUCounterUsageLogger.getInstance().logEvent("grazi.count", eventId, FeatureUsageData().apply(body))
 }
