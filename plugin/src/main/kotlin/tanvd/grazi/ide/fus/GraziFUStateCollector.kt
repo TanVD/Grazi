@@ -16,11 +16,10 @@ class GraziFUStateCollector : ApplicationUsagesCollector() {
         val state = GraziConfig.get()
         val default = GraziConfig.State()
 
-        //TODO-tanvd is it correct way of metric reporting?
-        state.enabledLanguages.forEach { metrics.add(newMetric("language", it.shortCode)) }
+        state.enabledLanguages.forEach { metrics.add(newMetric("enabled.language", it.shortCode)) }
 
         addIfDiffers(metrics, state, default, { s -> s.nativeLanguage.shortCode }, "native.language")
-        addBoolIfDiffers(metrics, state, default, { s -> s.enabledSpellcheck }, "spellcheck")
+        addBoolIfDiffers(metrics, state, default, { s -> s.enabledSpellcheck }, "enabled.spellcheck")
 
         state.userEnabledRules.forEach { metrics.add(newMetric("rule", FeatureUsageData().addData("id", it).addData("enabled", true))) }
 
