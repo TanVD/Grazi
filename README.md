@@ -13,7 +13,7 @@ under the hood, so it supports over 15 languages and provides the best performan
 accuracy among free (and even non-free) alternatives.
 
 <p align="center">
-  <img src="https://plugins.jetbrains.com/files/12175/screenshot_20039.png" width="75%" />
+  <img src="https://plugins.jetbrains.com/files/12175/screenshot_20233.png" width="75%" />
 </p>
 
 ## What's inside
