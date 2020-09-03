@@ -2,7 +2,7 @@
 
 **Grazie has moved into IntelliJ Sources**
 
-**New repository is https://github.com/JetBrains/intellij-plugins/tree/master/grazie**
+**New repository is https://github.com/JetBrains/intellij-community/tree/master/plugins/grazie**
 
 
 [![JetBrains Plugin](https://img.shields.io/jetbrains/plugin/v/12175-grazi.svg?style=flat-square&label=jetbrains%20plugin)](https://plugins.jetbrains.com/plugin/12175-grazi)
